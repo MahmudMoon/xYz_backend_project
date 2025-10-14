@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Express Learning API</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>🚀 Express Learning API</h1>
+        <p>A well-structured Node.js Express application</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="api-status" class="status">
+        <h3>Checking API Status...</h3>
+      </div>
+
+      <section>
+        <h2>Available Endpoints</h2>
+        <ul class="endpoint-list">
+          <li><code>GET /</code> - Welcome message</li>
+          <li><code>GET /health</code> - Basic health check</li>
+          <li><code>GET /health/system</code> - Detailed system information</li>
+        </ul>
+
+        <h3>Network Information Endpoints</h3>
+        <ul class="endpoint-list">
+          <li>
+            <code>GET /api/network-info</code> - Get all network info records
+          </li>
+          <li>
+            <code>GET /api/network-info/:id</code> - Get network info by ID
+          </li>
+          <li>
+            <code>POST /api/network-info</code> - Create network info record
+          </li>
+          <li><code>PUT /api/network-info/:id</code> - Update network info</li>
+          <li>
+            <code>DELETE /api/network-info/:id</code> - Delete network info
+          </li>
+          <li>
+            <code>GET /api/network-info/device/:deviceId</code> - Get by device
+            ID
+          </li>
+          <li>
+            <code>GET /api/network-info/statistics</code> - Get network
+            statistics
+          </li>
+          <li>
+            <code>POST /api/network-info/bulk</code> - Bulk create records
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>API Documentation</h2>
+        <p>📚 Comprehensive API documentation is available via Swagger UI:</p>
+        <a href="/api-docs" class="btn" target="_blank"
+          >View API Documentation</a
+        >
+      </section>
+
+      <section>
+        <h2>Quick Actions</h2>
+        <button id="refresh-status" class="btn">Refresh Status</button>
+        <button id="test-endpoints" class="btn secondary">
+          Test Endpoints
+        </button>
+      </section>
+      <section>
+        <h2>Test Results</h2>
+        <div id="test-results">
+          <p>Click "Test Endpoints" to run API tests</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Project Structure</h2>
+        <pre
+          style="
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+          "
+        >
+├── src/
+│   ├── controllers/     # Request handlers
+│   ├── routes/         # Route definitions
+│   ├── services/       # Business logic
+│   ├── middleware/     # Custom middleware
+│   ├── models/         # Data models
+│   ├── utils/          # Utility functions
+│   ├── config/         # Configuration files
+│   └── app.js          # Express app setup
+├── public/             # Static files
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── tests/              # Test files
+├── logs/               # Log files
+├── server.js           # Server entry point
+└── package.json        # Dependencies
+            </pre
+        >
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>
+          &copy; 2025 Express Learning Project. Built with Node.js & Express.
+        </p>
+      </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+  </body>
+</html>

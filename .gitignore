@@ -1,0 +1,173 @@
+# ===================================
+# Node.js Express API Project
+# ===================================
+
+# Dependencies and Package Managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Environment Variables (Critical - Never commit!)
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+
+# Application Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime Data
+pids/
+*.pid
+*.seed
+*.pid.lock
+.lock-wscript
+
+# Test Coverage Reports
+coverage/
+*.lcov
+.nyc_output
+.c8_output/
+junit.xml
+
+# Dependency Directories
+node_modules/
+jspm_packages/
+
+# TypeScript (if used in future)
+*.tsbuildinfo
+dist/
+build/
+
+# Database Files (Local Development)
+*.db
+*.sqlite
+*.sqlite3
+data/
+dumps/
+
+# MongoDB (if running locally)
+mongo-data/
+mongodb-data/
+*.mdb
+
+# Authentication & Security (Never commit!)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+private-keys/
+secrets/
+jwt-keys/
+
+# Uploads & User Generated Content
+uploads/
+public/uploads/
+user-uploads/
+temp-files/
+
+# Cache Directories
+.cache/
+.parcel-cache/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Build Tools & Bundlers
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+
+# Testing
+test-results/
+playwright-report/
+test-report/
+
+# Documentation Build
+docs/build/
+.docusaurus/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Editor & IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.project
+.classpath
+.c9/
+.settings/
+.history/
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Miscellaneous
+*.tgz
+*.tar.gz
+.yarn-integrity
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL History
+.node_repl_history
+
+# Production Build Artifacts
+dist/
+build/
+out/
+
+# Serverless Framework
+.serverless/
+
+# AWS Lambda
+.aws-sam/
+
+# Docker
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# Local Development Override Files
+docker-compose.override.yml
+local.yml
