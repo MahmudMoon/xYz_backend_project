@@ -689,6 +689,388 @@ class AdminService {
       throw error;
     }
   }
+
+  // ===================================
+  // SUPER ADMIN METHODS
+  // ===================================
+
+  /**
+   * Create super admin (one-time setup)
+   * @param {string} email - Super admin email
+   * @param {string} password - Super admin password
+   * @returns {Object} - Created super admin data
+   */
+  static async createSuperAdmin(email, password) {
+    try {
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+
+      // Check if super admin already exists
+      const existingSuperAdmin = await Admin.findOne({ role: "superadmin" });
+      if (existingSuperAdmin) {
+        throw new Error("Super admin already exists in the system");
+      }
+
+      // Check if admin with this email already exists
+      const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+      if (existingAdmin) {
+        throw new Error("Admin with this email already exists");
+      }
+
+      const superAdmin = new Admin({
+        email: email.toLowerCase(),
+        password, // Will be hashed by pre-save middleware
+        role: "superadmin",
+        isActive: true,
+      });
+
+      await superAdmin.save();
+
+      return {
+        success: true,
+        message: "Super admin created successfully",
+        admin: superAdmin.toJSON(),
+      };
+    } catch (error) {
+      console.error("Create super admin error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all regular admins (super admin only)
+   * @param {string} superAdminId - Super admin ID
+   * @param {Object} options - Query options
+   * @returns {Object} - List of regular admins
+   */
+  static async getAllRegularAdmins(superAdminId, options = {}) {
+    try {
+      if (!superAdminId || !mongoose.Types.ObjectId.isValid(superAdminId)) {
+        throw new Error("Valid super admin ID is required");
+      }
+
+      const { page = 1, limit = 10, isActive, search } = options;
+      const skip = (page - 1) * limit;
+
+      // Build query for regular admins only
+      const query = { role: "admin" };
+
+      if (isActive !== undefined) {
+        query.isActive = isActive;
+      }
+
+      if (search) {
+        query.email = { $regex: search, $options: "i" };
+      }
+
+      const [admins, total] = await Promise.all([
+        Admin.find(query)
+          .select("-password")
+          .populate("createdBy", "email role")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Admin.countDocuments(query),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        success: true,
+        message: "Regular admins retrieved successfully",
+        data: admins,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: totalPages,
+        },
+      };
+    } catch (error) {
+      console.error("Get all regular admins error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create new regular admin (super admin only)
+   * @param {Object} adminData - Admin data
+   * @param {string} superAdminId - Super admin ID
+   * @returns {Object} - Created admin data
+   */
+  static async createAdminBySuperAdmin(adminData, superAdminId) {
+    try {
+      const { email, password, confirmPassword } = adminData;
+
+      if (!email || !password || !confirmPassword) {
+        throw new Error(
+          "Email, password, and confirmation password are required"
+        );
+      }
+
+      if (password !== confirmPassword) {
+        throw new Error("Password and confirmation password do not match");
+      }
+
+      if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters long");
+      }
+
+      // Check if admin already exists
+      const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+      if (existingAdmin) {
+        throw new Error("Admin with this email already exists");
+      }
+
+      const newAdmin = new Admin({
+        email: email.toLowerCase(),
+        password, // Will be hashed by pre-save middleware
+        role: "admin",
+        createdBy: superAdminId,
+        isActive: true,
+      });
+
+      await newAdmin.save();
+      await newAdmin.populate("createdBy", "email role");
+
+      return {
+        success: true,
+        message: "Admin created successfully",
+        admin: newAdmin.toJSON(),
+      };
+    } catch (error) {
+      console.error("Create admin by super admin error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Revoke admin privileges (super admin only)
+   * @param {string} adminId - Admin ID to revoke
+   * @param {string} superAdminId - Super admin ID
+   * @returns {Object} - Success status and message
+   */
+  static async revokeAdminPrivileges(adminId, superAdminId) {
+    try {
+      if (!adminId || !superAdminId) {
+        throw new Error("Admin ID and Super admin ID are required");
+      }
+
+      if (
+        !mongoose.Types.ObjectId.isValid(adminId) ||
+        !mongoose.Types.ObjectId.isValid(superAdminId)
+      ) {
+        throw new Error("Invalid admin ID or super admin ID format");
+      }
+
+      const admin = await Admin.findById(adminId);
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+
+      if (admin.role === "superadmin") {
+        throw new Error("Cannot revoke super admin privileges");
+      }
+
+      if (!admin.isActive) {
+        throw new Error("Admin is already deactivated");
+      }
+
+      admin.isActive = false;
+      await admin.save();
+
+      return {
+        success: true,
+        message: "Admin privileges revoked successfully",
+        admin: {
+          id: admin._id,
+          email: admin.email,
+          isActive: admin.isActive,
+          updatedAt: admin.updatedAt,
+        },
+      };
+    } catch (error) {
+      console.error("Revoke admin privileges error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Restore admin privileges (super admin only)
+   * @param {string} adminId - Admin ID to restore
+   * @param {string} superAdminId - Super admin ID
+   * @returns {Object} - Success status and message
+   */
+  static async restoreAdminPrivileges(adminId, superAdminId) {
+    try {
+      if (!adminId || !superAdminId) {
+        throw new Error("Admin ID and Super admin ID are required");
+      }
+
+      if (
+        !mongoose.Types.ObjectId.isValid(adminId) ||
+        !mongoose.Types.ObjectId.isValid(superAdminId)
+      ) {
+        throw new Error("Invalid admin ID or super admin ID format");
+      }
+
+      const admin = await Admin.findById(adminId);
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+
+      if (admin.role === "superadmin") {
+        throw new Error("Super admin privileges cannot be modified");
+      }
+
+      if (admin.isActive) {
+        throw new Error("Admin is already active");
+      }
+
+      admin.isActive = true;
+      admin.loginAttempts = 0; // Reset login attempts
+      admin.lockUntil = null; // Remove any locks
+      await admin.save();
+
+      return {
+        success: true,
+        message: "Admin privileges restored successfully",
+        admin: {
+          id: admin._id,
+          email: admin.email,
+          isActive: admin.isActive,
+          updatedAt: admin.updatedAt,
+        },
+      };
+    } catch (error) {
+      console.error("Restore admin privileges error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Permanently delete admin (super admin only)
+   * @param {string} adminId - Admin ID to delete
+   * @param {string} superAdminId - Super admin ID
+   * @returns {Object} - Success status and message
+   */
+  static async deleteAdminBySuperAdmin(adminId, superAdminId) {
+    try {
+      if (!adminId || !superAdminId) {
+        throw new Error("Admin ID and Super admin ID are required");
+      }
+
+      if (
+        !mongoose.Types.ObjectId.isValid(adminId) ||
+        !mongoose.Types.ObjectId.isValid(superAdminId)
+      ) {
+        throw new Error("Invalid admin ID or super admin ID format");
+      }
+
+      const admin = await Admin.findById(adminId);
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+
+      if (admin.role === "superadmin") {
+        throw new Error("Cannot delete super admin");
+      }
+
+      const adminEmail = admin.email;
+      const adminIdStr = admin._id.toString();
+
+      // Also delete all library tokens created by this admin
+      await LibraryToken.deleteMany({ createdBy: adminId });
+
+      // Delete the admin
+      await Admin.findByIdAndDelete(adminId);
+
+      return {
+        success: true,
+        message: "Admin deleted successfully",
+        deletedAdmin: {
+          id: adminIdStr,
+          email: adminEmail,
+        },
+        deletedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error("Delete admin by super admin error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get comprehensive admin statistics (super admin only)
+   * @param {string} superAdminId - Super admin ID
+   * @returns {Object} - Admin and system statistics
+   */
+  static async getSuperAdminStatistics(superAdminId) {
+    try {
+      if (!superAdminId || !mongoose.Types.ObjectId.isValid(superAdminId)) {
+        throw new Error("Valid super admin ID is required");
+      }
+
+      const [
+        totalAdmins,
+        activeAdmins,
+        inactiveAdmins,
+        totalLibraryTokens,
+        activeLibraryTokens,
+        recentAdmins,
+        tokenStats,
+      ] = await Promise.all([
+        Admin.countDocuments({ role: "admin" }),
+        Admin.countDocuments({ role: "admin", isActive: true }),
+        Admin.countDocuments({ role: "admin", isActive: false }),
+        LibraryToken.countDocuments(),
+        LibraryToken.countDocuments({
+          isActive: true,
+          validity: { $gt: new Date() },
+        }),
+        Admin.find({ role: "admin" })
+          .select("-password")
+          .populate("createdBy", "email role")
+          .sort({ createdAt: -1 })
+          .limit(5),
+        LibraryToken.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalUsage: { $sum: "$usageCount" },
+              avgUsage: { $avg: "$usageCount" },
+            },
+          },
+        ]),
+      ]);
+
+      const stats = tokenStats[0] || { totalUsage: 0, avgUsage: 0 };
+
+      return {
+        success: true,
+        message: "Super admin statistics retrieved successfully",
+        statistics: {
+          admins: {
+            total: totalAdmins,
+            active: activeAdmins,
+            inactive: inactiveAdmins,
+          },
+          libraryTokens: {
+            total: totalLibraryTokens,
+            active: activeLibraryTokens,
+            inactive: totalLibraryTokens - activeLibraryTokens,
+            totalUsage: stats.totalUsage,
+            averageUsage: Math.round(stats.avgUsage * 100) / 100,
+          },
+          recentAdmins: recentAdmins,
+        },
+      };
+    } catch (error) {
+      console.error("Get super admin statistics error:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = AdminService;

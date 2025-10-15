@@ -31,6 +31,13 @@ const options = {
           bearerFormat: "JWT",
           description: "Enter JWT token for admin authentication",
         },
+        SuperAdminAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description:
+            "Enter JWT token for super admin authentication (role must be 'superadmin')",
+        },
         DeviceAuth: {
           type: "http",
           scheme: "bearer",

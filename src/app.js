@@ -9,6 +9,7 @@ const database = require("./config/database");
 const healthRoutes = require("./routes/healthRoutes");
 const networkInfoRoutes = require("./routes/networkInfoRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const superAdminRoutes = require("./routes/superAdminRoutes");
 const deviceRoutes = require("./routes/deviceRoutes");
 
 // Import middleware
@@ -43,6 +44,7 @@ app.use(
 app.use("/health", healthRoutes);
 app.use("/api/network-info", networkInfoRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/superadmin", superAdminRoutes);
 app.use("/device", deviceRoutes);
 
 // 404 handler

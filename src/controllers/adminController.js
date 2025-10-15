@@ -572,6 +572,318 @@ class AdminController {
       next(error);
     }
   }
+
+  // ===================================
+  // SUPER ADMIN CONTROLLER METHODS
+  // ===================================
+
+  /**
+   * GET /api/superadmin/admins
+   * Get all regular admins (super admin only)
+   */
+  async getAllRegularAdmins(req, res, next) {
+    try {
+      const superAdminId = req.adminId;
+      const options = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        isActive:
+          req.query.isActive !== undefined
+            ? req.query.isActive === "true"
+            : undefined,
+        search: req.query.search,
+      };
+
+      const result = await AdminService.getAllRegularAdmins(
+        superAdminId,
+        options
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Get all regular admins error:", error);
+
+      if (error.message.includes("Valid super admin ID is required")) {
+        return res.status(400).json({
+          success: false,
+          error: "Valid super admin ID is required",
+          code: "INVALID_SUPER_ADMIN_ID",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/superadmin/admins
+   * Create new regular admin (super admin only)
+   */
+  async createAdminBySuperAdmin(req, res, next) {
+    try {
+      const { email, password, confirmPassword } = req.body;
+      const superAdminId = req.adminId;
+
+      // Input validation
+      if (!email || !password || !confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          error: "Email, password, and password confirmation are required",
+          code: "MISSING_ADMIN_DATA",
+        });
+      }
+
+      // Email format validation
+      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid email format",
+          code: "INVALID_EMAIL",
+        });
+      }
+
+      const result = await AdminService.createAdminBySuperAdmin(
+        { email, password, confirmPassword },
+        superAdminId
+      );
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Create admin by super admin error:", error);
+
+      if (
+        error.message.includes(
+          "Password and confirmation password do not match"
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Password and confirmation password do not match",
+          code: "PASSWORD_MISMATCH",
+        });
+      }
+
+      if (error.message.includes("Password must be at least 6 characters")) {
+        return res.status(400).json({
+          success: false,
+          error: "Password must be at least 6 characters long",
+          code: "WEAK_PASSWORD",
+        });
+      }
+
+      if (error.message.includes("Admin with this email already exists")) {
+        return res.status(409).json({
+          success: false,
+          error: "Admin with this email already exists",
+          code: "ADMIN_EXISTS",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
+   * PUT /api/superadmin/admins/:id/revoke
+   * Revoke admin privileges (super admin only)
+   */
+  async revokeAdminPrivileges(req, res, next) {
+    try {
+      const { id } = req.params;
+      const superAdminId = req.adminId;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: "Admin ID is required",
+          code: "MISSING_ADMIN_ID",
+        });
+      }
+
+      const result = await AdminService.revokeAdminPrivileges(id, superAdminId);
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Revoke admin privileges error:", error);
+
+      if (error.message.includes("Invalid admin ID")) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid admin ID format",
+          code: "INVALID_ADMIN_ID",
+        });
+      }
+
+      if (error.message.includes("Admin not found")) {
+        return res.status(404).json({
+          success: false,
+          error: "Admin not found",
+          code: "ADMIN_NOT_FOUND",
+        });
+      }
+
+      if (error.message.includes("Cannot revoke super admin privileges")) {
+        return res.status(403).json({
+          success: false,
+          error: "Cannot revoke super admin privileges",
+          code: "CANNOT_REVOKE_SUPERADMIN",
+        });
+      }
+
+      if (error.message.includes("Admin is already deactivated")) {
+        return res.status(400).json({
+          success: false,
+          error: "Admin is already deactivated",
+          code: "ADMIN_ALREADY_DEACTIVATED",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
+   * PUT /api/superadmin/admins/:id/restore
+   * Restore admin privileges (super admin only)
+   */
+  async restoreAdminPrivileges(req, res, next) {
+    try {
+      const { id } = req.params;
+      const superAdminId = req.adminId;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: "Admin ID is required",
+          code: "MISSING_ADMIN_ID",
+        });
+      }
+
+      const result = await AdminService.restoreAdminPrivileges(
+        id,
+        superAdminId
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Restore admin privileges error:", error);
+
+      if (error.message.includes("Invalid admin ID")) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid admin ID format",
+          code: "INVALID_ADMIN_ID",
+        });
+      }
+
+      if (error.message.includes("Admin not found")) {
+        return res.status(404).json({
+          success: false,
+          error: "Admin not found",
+          code: "ADMIN_NOT_FOUND",
+        });
+      }
+
+      if (error.message.includes("Super admin privileges cannot be modified")) {
+        return res.status(403).json({
+          success: false,
+          error: "Super admin privileges cannot be modified",
+          code: "CANNOT_MODIFY_SUPERADMIN",
+        });
+      }
+
+      if (error.message.includes("Admin is already active")) {
+        return res.status(400).json({
+          success: false,
+          error: "Admin is already active",
+          code: "ADMIN_ALREADY_ACTIVE",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
+   * DELETE /api/superadmin/admins/:id
+   * Permanently delete admin (super admin only)
+   */
+  async deleteAdminBySuperAdmin(req, res, next) {
+    try {
+      const { id } = req.params;
+      const superAdminId = req.adminId;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: "Admin ID is required",
+          code: "MISSING_ADMIN_ID",
+        });
+      }
+
+      const result = await AdminService.deleteAdminBySuperAdmin(
+        id,
+        superAdminId
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Delete admin by super admin error:", error);
+
+      if (error.message.includes("Invalid admin ID")) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid admin ID format",
+          code: "INVALID_ADMIN_ID",
+        });
+      }
+
+      if (error.message.includes("Admin not found")) {
+        return res.status(404).json({
+          success: false,
+          error: "Admin not found",
+          code: "ADMIN_NOT_FOUND",
+        });
+      }
+
+      if (error.message.includes("Cannot delete super admin")) {
+        return res.status(403).json({
+          success: false,
+          error: "Cannot delete super admin",
+          code: "CANNOT_DELETE_SUPERADMIN",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/superadmin/statistics
+   * Get comprehensive admin statistics (super admin only)
+   */
+  async getSuperAdminStatistics(req, res, next) {
+    try {
+      const superAdminId = req.adminId;
+
+      const result = await AdminService.getSuperAdminStatistics(superAdminId);
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Get super admin statistics error:", error);
+
+      if (error.message.includes("Valid super admin ID is required")) {
+        return res.status(400).json({
+          success: false,
+          error: "Valid super admin ID is required",
+          code: "INVALID_SUPER_ADMIN_ID",
+        });
+      }
+
+      next(error);
+    }
+  }
 }
 
 module.exports = new AdminController();

@@ -2,12 +2,15 @@
 
 A comprehensive Node.js Express.js application with advanced authentication, MongoDB integration, and device management features. This project demonstrates enterprise-level API development with JWT authentication, library token management, and secure device authentication flows.
 
+> **📚 Complete Documentation**: See [DOCUMENTATION_HUB.md](./DOCUMENTATION_HUB.md) for comprehensive guides covering API documentation, database schema, testing procedures, deployment instructions, and more.
+
 ## 🚀 Features
 
 - **MVC Architecture**: Well-organized Model-View-Controller structure with service layers
 - **JWT Authentication**: Multi-tier authentication system (Admin + Device tokens)
 - **Device Authentication**: Library token-based device authentication with short-lived JWT tokens
 - **MongoDB Integration**: Complete database integration with Mongoose ODM
+- **Super Admin System**: Hierarchical role-based admin management with CLI tools
 - **Admin Management**: Full admin CRUD operations with secure authentication
 - **Library Token System**: 32-character hash token generation and management
 - **RESTful API**: Complete CRUD operations for network information management
@@ -48,6 +51,9 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
 │   │   ├── swagger.js             # Swagger/OpenAPI configuration
 │   │   └── config.js              # Application configuration
 │   └── app.js          # Express application setup
+├── scripts/            # Super Admin management CLI tools
+│   ├── createSuperAdmin.js        # Initial super admin creation & setup
+│   └── manageSuperAdmin.js        # Complete management & testing console
 ├── public/             # Static files (CSS, JS, images)
 ├── logs/               # Application logs (auto-generated)
 ├── server.js           # Server entry point with graceful shutdown
@@ -113,7 +119,138 @@ npm run test:watch
 npm run lint
 ```
 
-## � API Documentation
+## 👑 Super Admin Management
+
+This project includes a comprehensive **Super Admin Management System** with CLI scripts for secure administration:
+
+### 🔐 Super Admin Features
+
+- **🎯 Single Super Admin**: Only one super admin allowed in the system
+- **👤 Admin Management**: Create, manage, and revoke admin privileges
+- **🔒 Secure Authentication**: Multi-layer password verification system
+- **🆘 Emergency Access**: Password recovery for emergency situations
+- **📊 System Monitoring**: Complete admin statistics and oversight
+- **🛡️ Role-Based Access**: Hierarchical admin → superadmin privilege system
+
+### 🛠️ Available Scripts
+
+#### 1. Create Super Admin
+
+```bash
+npm run create-superadmin
+```
+
+**Features:**
+
+- Interactive CLI with hidden password input
+- Email validation and duplicate prevention
+- Strong password requirements (12+ chars, mixed case, numbers, symbols)
+- Single super admin enforcement
+- Secure bcrypt hashing (12 salt rounds)
+
+#### 2. Manage Super Admin
+
+```bash
+npm run manage-superadmin
+```
+
+**Interactive Management Console:**
+
+```
+🛠️  Super Admin Management Console
+════════════════════════════════════════════════════════════════════════════════
+1. 👤 View Super Admin Information
+2. 🔒 Reset Super Admin Password (with current password verification)
+3. 🆘 Emergency Password Reset (when password unknown)
+4. 📊 View System Statistics
+5. 👥 List All Admin Accounts
+6. 🚪 Exit
+════════════════════════════════════════════════════════════════════════════════
+```
+
+**Capabilities:**
+
+- **Profile Management**: View super admin details and creation info
+- **Secure Password Reset**: Verify current password before updating
+- **Emergency Recovery**: Reset password when current password is lost
+- **System Overview**: View total admins, active accounts, and statistics
+- **Admin Oversight**: List all admin accounts with status and roles
+
+#### 3. Test Super Admin (Integrated)
+
+```bash
+npm run manage-superadmin
+# Use the management console for all testing and verification
+```
+
+**Note:** All testing functionality is integrated into the management console. The `test-superadmin` command redirects to the main management interface for streamlined operations.
+
+### 🔒 Security Implementation
+
+#### Password Security
+
+- **Bcrypt Hashing**: 12 salt rounds for maximum security
+- **Strong Requirements**: Minimum 12 characters with complexity rules
+- **Hidden Input**: CLI password masking for secure entry
+- **Verification**: Double confirmation for all password operations
+
+#### Access Control
+
+- **Role Hierarchy**: Super Admin → Admin → User privilege levels
+- **JWT Authentication**: Secure token-based API access
+- **Database Constraints**: Unique super admin enforcement at model level
+- **Audit Trail**: Creation tracking and management history
+
+#### Emergency Features
+
+- **Emergency Reset**: Direct database password reset for recovery
+- **Confirmation Steps**: Multiple confirmations for destructive operations
+- **Visible Emergency Input**: Password visible only during emergency reset
+- **Verification Testing**: Immediate password validation after reset
+
+### 📋 Super Admin Workflow
+
+#### Initial Setup
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your MongoDB and JWT settings
+
+# 3. Create super admin
+npm run create-superadmin
+```
+
+#### Daily Management
+
+```bash
+# Interactive management console
+npm run manage-superadmin
+
+# Quick testing/verification
+npm run test-superadmin
+```
+
+#### Emergency Recovery
+
+```bash
+# If super admin password is lost
+npm run manage-superadmin
+# Choose option 3: Emergency Password Reset
+```
+
+### 🚨 Important Security Notes
+
+- **Single Super Admin**: Only one super admin can exist - this is enforced at both application and database levels
+- **Emergency Use Only**: Emergency password reset should only be used when current password is unknown
+- **Production Caution**: Always backup database before running admin management operations
+- **Secure Storage**: Super admin credentials should be stored securely and shared minimally
+- **Regular Testing**: Use test script to verify super admin functionality periodically
+
+## 📚 API Documentation
 
 This project includes comprehensive **Swagger/OpenAPI 3.0** documentation for all endpoints:
 
@@ -157,6 +294,17 @@ This project implements a sophisticated **multi-tier authentication system**:
 - `GET /api/admin/profile` - Get admin profile (requires admin JWT)
 - `PUT /api/admin/profile` - Update admin profile (requires admin JWT)
 - `DELETE /api/admin/profile` - Delete admin account (requires admin JWT)
+
+#### 👑 Super Admin Management (`/api/superadmin/*` - Super Admin Auth Required)
+
+- `POST /api/superadmin/create-admin` - Create new admin account
+- `GET /api/superadmin/admins` - List all admin accounts with details
+- `GET /api/superadmin/admins/:id` - Get specific admin account details
+- `PUT /api/superadmin/admins/:id` - Update admin account information
+- `DELETE /api/superadmin/admins/:id` - Delete admin account
+- `PUT /api/superadmin/admins/:id/toggle-status` - Activate/deactivate admin
+- `PUT /api/superadmin/admins/:id/revoke-privileges` - Revoke admin privileges
+- `GET /api/superadmin/statistics` - Get comprehensive admin statistics
 
 #### 🎫 Library Token Management (`/api/admin/*` - Admin Auth Required)
 

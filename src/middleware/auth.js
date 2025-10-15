@@ -331,9 +331,68 @@ const authenticateDevice = async (req, res, next) => {
   }
 };
 
+/**
+ * Super Admin Authentication middleware
+ * Verifies admin JWT token and checks for super admin role
+ */
+const authenticateSuperAdmin = async (req, res, next) => {
+  try {
+    // First authenticate as regular admin
+    await new Promise((resolve, reject) => {
+      authenticateAdmin(req, res, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // Then check if user is super admin
+    if (req.admin.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        error: "Access denied. Super admin privileges required.",
+        code: "SUPER_ADMIN_REQUIRED",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Super admin authentication error:", error);
+    return res.status(401).json({
+      success: false,
+      error: "Super admin authentication failed.",
+      code: "SUPER_ADMIN_AUTH_FAILED",
+    });
+  }
+};
+
+/**
+ * Middleware to check if user can manage admins (super admin only)
+ */
+const canManageAdmins = async (req, res, next) => {
+  try {
+    if (req.admin.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        error: "Access denied. Only super admin can manage other admins.",
+        code: "INSUFFICIENT_PRIVILEGES",
+      });
+    }
+    next();
+  } catch (error) {
+    console.error("Admin management privilege check error:", error);
+    return res.status(403).json({
+      success: false,
+      error: "Privilege check failed.",
+      code: "PRIVILEGE_CHECK_FAILED",
+    });
+  }
+};
+
 module.exports = {
   authenticateAdmin,
   authenticateDevice,
+  authenticateSuperAdmin,
+  canManageAdmins,
   optionalAuth,
   authRateLimit,
 };

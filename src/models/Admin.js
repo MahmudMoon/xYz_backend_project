@@ -26,9 +26,22 @@ const adminSchema = new Schema(
       minlength: [6, "Password must be at least 6 characters long"],
       select: false, // Don't include password in queries by default
     },
+    role: {
+      type: String,
+      enum: {
+        values: ["admin", "superadmin"],
+        message: "{VALUE} is not a valid role",
+      },
+      default: "admin",
+    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
     },
     lastLogin: {
       type: Date,
@@ -59,8 +72,18 @@ adminSchema.index({ email: 1 }, { unique: true });
 adminSchema.index({ isActive: 1 });
 adminSchema.index({ createdAt: -1 });
 
-// Pre-save middleware to hash password
+// Pre-save middleware to ensure only one superadmin and hash password
 adminSchema.pre("save", async function (next) {
+  // Check if this is a new superadmin
+  if (this.role === "superadmin" && this.isNew) {
+    const existingSuperAdmin = await this.constructor.findOne({
+      role: "superadmin",
+    });
+    if (existingSuperAdmin) {
+      throw new Error("Only one super admin is allowed in the system");
+    }
+  }
+
   // Only hash the password if it has been modified (or is new)
   if (!this.isModified("password")) return next();
 

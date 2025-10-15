@@ -138,6 +138,151 @@ Content-Type: application/json
 }
 ```
 
+### 👑 Super Admin Management
+
+| Method   | Endpoint                                       | Description                  | Authentication  |
+| -------- | ---------------------------------------------- | ---------------------------- | --------------- |
+| `POST`   | `/api/superadmin/create-admin`                 | Create new admin account     | Super Admin JWT |
+| `GET`    | `/api/superadmin/admins`                       | List all admin accounts      | Super Admin JWT |
+| `GET`    | `/api/superadmin/admins/:id`                   | Get specific admin details   | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id`                   | Update admin information     | Super Admin JWT |
+| `DELETE` | `/api/superadmin/admins/:id`                   | Delete admin account         | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id/toggle-status`     | Activate/deactivate admin    | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id/revoke-privileges` | Revoke admin privileges      | Super Admin JWT |
+| `GET`    | `/api/superadmin/statistics`                   | Get comprehensive statistics | Super Admin JWT |
+
+#### Create Admin by Super Admin
+
+```bash
+POST /api/superadmin/create-admin
+Authorization: Bearer <super_admin_jwt_token>
+Content-Type: application/json
+
+{
+  "email": "newadmin@example.com",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Admin created successfully",
+  "admin": {
+    "id": "507f1f77bcf86cd799439012",
+    "email": "newadmin@example.com",
+    "role": "admin",
+    "isActive": true,
+    "createdBy": "507f1f77bcf86cd799439011",
+    "createdAt": "2025-10-15T10:30:00.000Z"
+  }
+}
+```
+
+#### List All Admins
+
+```bash
+GET /api/superadmin/admins?page=1&limit=10&status=active
+Authorization: Bearer <super_admin_jwt_token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Admins retrieved successfully",
+  "admins": [
+    {
+      "id": "507f1f77bcf86cd799439012",
+      "email": "admin@example.com",
+      "role": "admin",
+      "isActive": true,
+      "createdBy": "507f1f77bcf86cd799439011",
+      "createdAt": "2025-10-15T10:30:00.000Z",
+      "lastLoginAt": "2025-10-15T11:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 1,
+    "totalAdmins": 1,
+    "hasNextPage": false,
+    "hasPrevPage": false
+  }
+}
+```
+
+#### Revoke Admin Privileges
+
+```bash
+PUT /api/superadmin/admins/507f1f77bcf86cd799439012/revoke-privileges
+Authorization: Bearer <super_admin_jwt_token>
+Content-Type: application/json
+
+{
+  "reason": "Security policy violation"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Admin privileges revoked successfully",
+  "admin": {
+    "id": "507f1f77bcf86cd799439012",
+    "email": "admin@example.com",
+    "isActive": false,
+    "revokedAt": "2025-10-15T12:00:00.000Z",
+    "revokedBy": "507f1f77bcf86cd799439011"
+  }
+}
+```
+
+#### Super Admin Statistics
+
+```bash
+GET /api/superadmin/statistics
+Authorization: Bearer <super_admin_jwt_token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "statistics": {
+    "adminStats": {
+      "totalAdmins": 5,
+      "activeAdmins": 4,
+      "inactiveAdmins": 1,
+      "recentLogins": 3
+    },
+    "tokenStats": {
+      "totalLibraryTokens": 12,
+      "activeTokens": 10,
+      "expiredTokens": 2,
+      "tokensUsedToday": 5
+    },
+    "deviceStats": {
+      "totalRegisteredDevices": 25,
+      "activeDevices": 20,
+      "devicesAuthenticatedToday": 15
+    },
+    "systemStats": {
+      "totalNetworkInfoRecords": 150,
+      "recordsCreatedToday": 8,
+      "systemUptime": "72h 15m"
+    }
+  }
+}
+```
+
 ### 🎫 Library Token Management
 
 | Method | Endpoint                                  | Description                | Authentication |
