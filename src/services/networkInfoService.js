@@ -166,53 +166,6 @@ class NetworkInfoService {
     }
   }
 
-  // Get network statistics
-  async getNetworkStatistics() {
-    try {
-      if (!database.isConnected()) {
-        return {
-          totalRecords: 0,
-          connectedDevices: 0,
-          roamingDevices: 0,
-          averageSignalDbm: null,
-          networkTypeDistribution: {},
-        };
-      }
-
-      const stats = await NetworkInfo.getNetworkStats();
-
-      if (stats.length > 0) {
-        const result = stats[0];
-
-        // Calculate network type distribution
-        const networkTypes = result.networkTypeDistribution || [];
-        const distribution = {};
-        networkTypes.forEach((type) => {
-          distribution[type] = (distribution[type] || 0) + 1;
-        });
-
-        return {
-          totalRecords: result.totalRecords || 0,
-          connectedDevices: result.connectedDevices || 0,
-          roamingDevices: result.roamingDevices || 0,
-          averageSignalDbm: result.averageSignalDbm || null,
-          networkTypeDistribution: distribution,
-        };
-      }
-
-      return {
-        totalRecords: 0,
-        connectedDevices: 0,
-        roamingDevices: 0,
-        averageSignalDbm: null,
-        networkTypeDistribution: {},
-      };
-    } catch (error) {
-      console.error("Error getting network statistics:", error.message);
-      throw new Error("Failed to get network statistics");
-    }
-  }
-
   // Get record count
   async getNetworkInfoCount() {
     try {

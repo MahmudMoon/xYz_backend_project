@@ -146,20 +146,6 @@ class NetworkInfoController {
     }
   }
 
-  // Get network statistics
-  async getNetworkStatistics(req, res, next) {
-    try {
-      const statistics = await networkInfoService.getNetworkStatistics();
-
-      res.json({
-        success: true,
-        data: statistics,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   // Bulk create network info records
   async bulkCreateNetworkInfo(req, res, next) {
     try {

@@ -858,32 +858,6 @@ class AdminController {
       next(error);
     }
   }
-
-  /**
-   * GET /api/superadmin/statistics
-   * Get comprehensive admin statistics (super admin only)
-   */
-  async getSuperAdminStatistics(req, res, next) {
-    try {
-      const superAdminId = req.adminId;
-
-      const result = await AdminService.getSuperAdminStatistics(superAdminId);
-
-      res.status(200).json(result);
-    } catch (error) {
-      console.error("Get super admin statistics error:", error);
-
-      if (error.message.includes("Valid super admin ID is required")) {
-        return res.status(400).json({
-          success: false,
-          error: "Valid super admin ID is required",
-          code: "INVALID_SUPER_ADMIN_ID",
-        });
-      }
-
-      next(error);
-    }
-  }
 }
 
 module.exports = new AdminController();

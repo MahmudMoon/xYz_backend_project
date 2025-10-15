@@ -204,27 +204,6 @@ networkInfoSchema.statics.findByNetworkType = function (networkType) {
   return this.find({ networkType }).sort({ createdAt: -1 });
 };
 
-networkInfoSchema.statics.getNetworkStats = function () {
-  return this.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalRecords: { $sum: 1 },
-        connectedDevices: {
-          $sum: { $cond: [{ $eq: ["$isConnected", true] }, 1, 0] },
-        },
-        roamingDevices: {
-          $sum: { $cond: [{ $eq: ["$isRoaming", true] }, 1, 0] },
-        },
-        averageSignalDbm: { $avg: "$signalDbm" },
-        networkTypeDistribution: {
-          $push: "$networkType",
-        },
-      },
-    },
-  ]);
-};
-
 // Pre-save middleware
 networkInfoSchema.pre("save", function (next) {
   // Validate signal correlation

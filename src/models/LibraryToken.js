@@ -169,55 +169,6 @@ libraryTokenSchema.statics.cleanupExpired = function () {
   });
 };
 
-// Static method to get token statistics
-libraryTokenSchema.statics.getStatistics = async function () {
-  const stats = await this.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalTokens: { $sum: 1 },
-        activeTokens: {
-          $sum: {
-            $cond: [{ $eq: ["$isActive", true] }, 1, 0],
-          },
-        },
-        expiredTokens: {
-          $sum: {
-            $cond: [{ $lt: ["$validity", new Date()] }, 1, 0],
-          },
-        },
-        validTokens: {
-          $sum: {
-            $cond: [
-              {
-                $and: [
-                  { $eq: ["$isActive", true] },
-                  { $gt: ["$validity", new Date()] },
-                ],
-              },
-              1,
-              0,
-            ],
-          },
-        },
-        totalUsage: { $sum: "$usageCount" },
-        avgUsage: { $avg: "$usageCount" },
-      },
-    },
-  ]);
-
-  return (
-    stats[0] || {
-      totalTokens: 0,
-      activeTokens: 0,
-      expiredTokens: 0,
-      validTokens: 0,
-      totalUsage: 0,
-      avgUsage: 0,
-    }
-  );
-};
-
 // Post-save middleware
 libraryTokenSchema.post("save", function (doc, next) {
   console.log(

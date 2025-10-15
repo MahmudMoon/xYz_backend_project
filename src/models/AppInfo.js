@@ -172,54 +172,6 @@ appInfoSchema.methods.toJSON = function () {
   return appObj;
 };
 
-// Static method to get app statistics
-appInfoSchema.statics.getStatistics = async function (libraryToken = null) {
-  const matchQuery = { isActive: true };
-  if (libraryToken) {
-    matchQuery.libraryToken = libraryToken;
-  }
-
-  const stats = await this.aggregate([
-    { $match: matchQuery },
-    {
-      $group: {
-        _id: null,
-        totalApps: { $sum: 1 },
-        uniqueAppNames: { $addToSet: "$appName" },
-        uniqueVersions: { $addToSet: "$version" },
-        totalAuthCount: { $sum: "$authCount" },
-        avgAuthCount: { $avg: "$authCount" },
-        lastAuthAt: { $max: "$lastAuthAt" },
-        firstCreatedAt: { $min: "$createdAt" },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        totalApps: 1,
-        uniqueAppNamesCount: { $size: "$uniqueAppNames" },
-        uniqueVersionsCount: { $size: "$uniqueVersions" },
-        totalAuthCount: 1,
-        avgAuthCount: { $round: ["$avgAuthCount", 2] },
-        lastAuthAt: 1,
-        firstCreatedAt: 1,
-      },
-    },
-  ]);
-
-  return (
-    stats[0] || {
-      totalApps: 0,
-      uniqueAppNamesCount: 0,
-      uniqueVersionsCount: 0,
-      totalAuthCount: 0,
-      avgAuthCount: 0,
-      lastAuthAt: null,
-      firstCreatedAt: null,
-    }
-  );
-};
-
 // Pre-save middleware
 appInfoSchema.pre("save", function (next) {
   // Normalize app name and version

@@ -420,60 +420,6 @@ router.get(
 
 /**
  * @swagger
- * /api/network-info/statistics:
- *   get:
- *     summary: Get network statistics
- *     description: Retrieve network statistics and analytics
- *     tags: [NetworkInfo]
- *     security:
- *       - DeviceAuth: []
- *     responses:
- *       200:
- *         description: Network statistics
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalRecords:
- *                       type: integer
- *                       example: 1000
- *                     connectedDevices:
- *                       type: integer
- *                       example: 850
- *                     roamingDevices:
- *                       type: integer
- *                       example: 50
- *                     averageSignalDbm:
- *                       type: number
- *                       example: -78.5
- *                     networkTypeDistribution:
- *                       type: object
- *                       properties:
- *                         "5G":
- *                           type: integer
- *                           example: 400
- *                         "4G":
- *                           type: integer
- *                           example: 500
- *                         "3G":
- *                           type: integer
- *                           example: 100
- */
-router.get(
-  "/statistics",
-  authenticateDevice,
-  networkInfoController.getNetworkStatistics
-);
-
-/**
- * @swagger
  * /api/network-info/bulk:
  *   post:
  *     summary: Bulk create network info records
