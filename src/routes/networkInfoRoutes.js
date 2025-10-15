@@ -212,6 +212,8 @@ router.get("/", authenticateDevice, networkInfoController.getAllNetworkInfo);
  *     summary: Get network info by ID
  *     description: Retrieve a specific network info record by ID
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -250,6 +252,8 @@ router.get(
  *     summary: Create new network info record
  *     description: Create a new network information record
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -289,6 +293,8 @@ router.post(
  *     summary: Update network info
  *     description: Update an existing network info record
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -336,6 +342,8 @@ router.put(
  *     summary: Delete network info
  *     description: Delete a network info record by ID
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -374,6 +382,8 @@ router.delete(
  *     summary: Get network info by device ID
  *     description: Retrieve all network info records for a specific device
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     parameters:
  *       - in: path
  *         name: deviceId
@@ -415,6 +425,8 @@ router.get(
  *     summary: Get network statistics
  *     description: Retrieve network statistics and analytics
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     responses:
  *       200:
  *         description: Network statistics
@@ -467,6 +479,8 @@ router.get(
  *     summary: Bulk create network info records
  *     description: Create multiple network info records in a single request
  *     tags: [NetworkInfo]
+ *     security:
+ *       - DeviceAuth: []
  *     requestBody:
  *       required: true
  *       content:

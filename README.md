@@ -117,11 +117,12 @@ npm run lint
 
 This project includes comprehensive **Swagger/OpenAPI 3.0** documentation for all endpoints:
 
-### 🌐 Interactive Documentation
+## 📱 Interactive Documentation
 
-- **Swagger UI**: Visit `http://localhost:3000/api-docs` for interactive API documentation
-- **Try It Out**: Test all endpoints directly from the browser
-- **Schema Definitions**: Complete request/response schemas with examples
+- **📖 Complete API Documentation**: [API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) - Comprehensive API guide with examples
+- **🌐 Swagger UI**: Visit `http://localhost:3000/api-docs` for interactive API documentation
+- **🔧 Try It Out**: Test all endpoints directly from the browser with authentication
+- **📋 Schema Definitions**: Complete request/response schemas with examples and error codes
 
 ## 🔐 Authentication System
 
@@ -389,7 +390,8 @@ npm run dev
 
 # Visit the application
 open http://localhost:3000
-open http://localhost:3000/api-docs  # Swagger Documentation
+open http://localhost:3000/api-docs  # Interactive Swagger Documentation
+open ./docs/API_DOCUMENTATION.md    # Complete API Documentation
 ```
 
 ## 🎯 Project Highlights
