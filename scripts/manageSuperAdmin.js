@@ -20,6 +20,9 @@
  * - Non-destructive operations
  */
 
+// Load environment variables from .env file
+require("dotenv").config();
+
 const readline = require("readline");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");

@@ -287,23 +287,23 @@ This project implements a sophisticated **multi-tier authentication system**:
 - `GET /health` - Basic health check with database status
 - `GET /health/system` - Detailed system information
 
-#### 👤 Admin Management (`/api/admin/*`)
+#### 👤 Admin Authentication (`/api/admin/*`)
 
-- `POST /api/admin/create` - Create new admin (no auth required)
-- `POST /api/admin/verify` - Admin login authentication
+- `POST /api/admin/verify` - **Regular admin** login authentication
 - `GET /api/admin/profile` - Get admin profile (requires admin JWT)
 - `PUT /api/admin/profile` - Update admin profile (requires admin JWT)
 - `DELETE /api/admin/profile` - Delete admin account (requires admin JWT)
 
-#### 👑 Super Admin Management (`/api/superadmin/*` - Super Admin Auth Required)
+#### 👑 Super Admin Management (`/api/superadmin/*`)
 
-- `POST /api/superadmin/create-admin` - Create new admin account
-- `GET /api/superadmin/admins` - List all admin accounts with details
-- `GET /api/superadmin/admins/:id` - Get specific admin account details
-- `PUT /api/superadmin/admins/:id` - Update admin account information
-- `DELETE /api/superadmin/admins/:id` - Delete admin account
-- `PUT /api/superadmin/admins/:id/toggle-status` - Activate/deactivate admin
-- `PUT /api/superadmin/admins/:id/revoke-privileges` - Revoke admin privileges
+- `POST /api/superadmin/verify` - **Super admin** login authentication (no auth required)
+- `POST /api/superadmin/admins` - Create new admin account (requires super admin JWT)
+- `GET /api/superadmin/admins` - List all admin accounts with details (requires super admin JWT)
+- `GET /api/superadmin/admins/:id` - Get specific admin account details (requires super admin JWT)
+- `PUT /api/superadmin/admins/:id` - Update admin account information (requires super admin JWT)
+- `DELETE /api/superadmin/admins/:id` - Delete admin account (requires super admin JWT)
+- `PUT /api/superadmin/admins/:id/toggle-status` - Activate/deactivate admin (requires super admin JWT)
+- `PUT /api/superadmin/admins/:id/revoke-privileges` - Revoke admin privileges (requires super admin JWT)
 
 #### 🎫 Library Token Management (`/api/admin/*` - Admin Auth Required)
 
@@ -330,19 +330,9 @@ This project implements a sophisticated **multi-tier authentication system**:
 
 ### 🚀 Quick Start Authentication Flow
 
-**1. Create Admin:**
+> **⚠️ Note**: Admin accounts must be created by Super Admin. Use `npm run create-superadmin` first, then create admins via Super Admin API.
 
-```bash
-curl -X POST http://localhost:3000/api/admin/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "SecurePassword123!",
-    "confirmPassword": "SecurePassword123!"
-  }'
-```
-
-**2. Login Admin:**
+**1. Login Admin:**
 
 ```bash
 curl -X POST http://localhost:3000/api/admin/verify \
@@ -354,7 +344,7 @@ curl -X POST http://localhost:3000/api/admin/verify \
 # Returns: { "token": "admin-jwt-token", ... }
 ```
 
-**3. Generate Library Token:**
+**2. Generate Library Token:**
 
 ```bash
 curl -X POST http://localhost:3000/api/admin/library-token \
@@ -364,7 +354,9 @@ curl -X POST http://localhost:3000/api/admin/library-token \
 # Returns: { "token": "32-character-hash-token", ... }
 ```
 
-**4. Device Authentication:**
+**3. Device Authentication:**
+
+**3. Device Authentication:**
 
 ```bash
 curl -X POST http://localhost:3000/device/auth \
@@ -373,11 +365,13 @@ curl -X POST http://localhost:3000/device/auth \
     "token": "32-character-hash-token",
     "appInfo": {
       "appName": "My Mobile App",
-      "version": "1.0.0"
+      "version": "1.2.3"
     }
   }'
-# Returns: { "deviceToken": "short-lived-jwt", "expiresIn": "5m", ... }
+# Returns: { "deviceToken": "device-jwt-token", ... }
 ```
+
+**4. Access Network APIs:**
 
 **5. Access Protected Network Info API:**
 

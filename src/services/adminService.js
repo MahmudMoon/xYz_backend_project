@@ -13,6 +13,12 @@ class AdminService {
    * @param {string} password - Admin password
    * @returns {Object} - Success status, token, and admin data
    */
+  /**
+   * Verify admin credentials (regular admin only)
+   * @param {string} email - Admin email
+   * @param {string} password - Admin password
+   * @returns {Object} - Admin verification result
+   */
   static async verifyAdmin(email, password) {
     try {
       if (!email || !password) {
@@ -24,6 +30,13 @@ class AdminService {
 
       if (!admin) {
         throw new Error("Invalid email or password");
+      }
+
+      // Check if this is a regular admin (not super admin)
+      if (admin.role !== "admin") {
+        throw new Error(
+          "Invalid credentials. Use super admin login for super admin accounts."
+        );
       }
 
       // Check if account is locked
@@ -68,6 +81,78 @@ class AdminService {
       };
     } catch (error) {
       console.error("Admin verification error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify super admin credentials (super admin only)
+   * @param {string} email - Super admin email
+   * @param {string} password - Super admin password
+   * @returns {Object} - Super admin verification result
+   */
+  static async verifySuperAdmin(email, password) {
+    try {
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+
+      // Find super admin with password field included
+      const admin = await Admin.findByEmailWithPassword(email);
+
+      if (!admin) {
+        throw new Error("Invalid email or password");
+      }
+
+      // Check if this is a super admin
+      if (admin.role !== "superadmin") {
+        throw new Error(
+          "Invalid credentials. Use regular admin login for admin accounts."
+        );
+      }
+
+      // Check if account is locked
+      if (admin.isLocked) {
+        const lockTimeRemaining = Math.ceil(
+          (admin.lockUntil - Date.now()) / 1000 / 60
+        );
+        throw new Error(
+          `Super admin account is locked. Try again in ${lockTimeRemaining} minutes`
+        );
+      }
+
+      // Check if account is active
+      if (!admin.isActive) {
+        throw new Error("Super admin account is deactivated");
+      }
+
+      // Compare password
+      const isPasswordValid = await admin.comparePassword(password);
+
+      if (!isPasswordValid) {
+        // Increment failed login attempts
+        await admin.incLoginAttempts();
+        throw new Error("Invalid email or password");
+      }
+
+      // Reset login attempts on successful login
+      await admin.resetLoginAttempts();
+
+      // Generate JWT token
+      const token = admin.generateAuthToken();
+
+      // Return super admin data without sensitive fields
+      const adminData = admin.toJSON();
+
+      return {
+        success: true,
+        message: "Super admin verified successfully",
+        token,
+        admin: adminData,
+        expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+      };
+    } catch (error) {
+      console.error("Super admin verification error:", error);
       throw error;
     }
   }
@@ -214,45 +299,6 @@ class AdminService {
       };
     } catch (error) {
       console.error("Delete admin error:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create a new admin (utility method for seeding or admin creation)
-   * @param {Object} adminData - Admin data
-   * @returns {Object} - Created admin data
-   */
-  static async createAdmin(adminData) {
-    try {
-      const { email, password } = adminData;
-
-      if (!email || !password) {
-        throw new Error("Email and password are required");
-      }
-
-      // Check if admin already exists
-      const existingAdmin = await Admin.findByEmail(email);
-
-      if (existingAdmin) {
-        throw new Error("Admin with this email already exists");
-      }
-
-      // Create new admin
-      const admin = new Admin({
-        email: email.toLowerCase(),
-        password,
-      });
-
-      await admin.save();
-
-      return {
-        success: true,
-        message: "Admin created successfully",
-        admin: admin.toJSON(),
-      };
-    } catch (error) {
-      console.error("Create admin error:", error);
       throw error;
     }
   }

@@ -73,45 +73,19 @@ This API implements a sophisticated **3-tier authentication system**:
 }
 ```
 
-### 👤 Admin Management
+### 👤 Admin Authentication
 
-| Method   | Endpoint             | Description                | Authentication |
-| -------- | -------------------- | -------------------------- | -------------- |
-| `POST`   | `/api/admin/create`  | Create new admin account   | None           |
-| `POST`   | `/api/admin/verify`  | Admin login authentication | None           |
-| `GET`    | `/api/admin/profile` | Get admin profile          | Admin JWT      |
-| `PUT`    | `/api/admin/profile` | Update admin profile       | Admin JWT      |
-| `DELETE` | `/api/admin/profile` | Delete admin account       | Admin JWT      |
+| Method   | Endpoint                 | Description             | Authentication |
+| -------- | ------------------------ | ----------------------- | -------------- |
+| `POST`   | `/api/admin/verify`      | **Regular admin** login | None           |
+| `POST`   | `/api/superadmin/verify` | **Super admin** login   | None           |
+| `GET`    | `/api/admin/profile`     | Get admin profile       | Admin JWT      |
+| `PUT`    | `/api/admin/profile`     | Update admin profile    | Admin JWT      |
+| `DELETE` | `/api/admin/profile`     | Delete admin account    | Admin JWT      |
 
-#### Create Admin
+> **⚠️ Admin Creation**: Admin accounts can only be created by Super Admin via `POST /api/superadmin/admins`. See [Super Admin Management](#-super-admin-management) section.
 
-```bash
-POST /api/admin/create
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "password": "SecurePassword123!",
-  "confirmPassword": "SecurePassword123!"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "message": "Admin created successfully",
-  "admin": {
-    "email": "admin@example.com",
-    "isActive": true,
-    "createdAt": "2025-10-15T10:30:00.000Z",
-    "id": "507f1f77bcf86cd799439011"
-  }
-}
-```
-
-#### Admin Login
+#### Regular Admin Login
 
 ```bash
 POST /api/admin/verify
@@ -137,6 +111,53 @@ Content-Type: application/json
   "expiresIn": "24h"
 }
 ```
+
+#### Super Admin Login
+
+```bash
+POST /api/superadmin/verify
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperSecurePassword123!"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Super admin verified successfully",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "admin": {
+    "email": "superadmin@example.com",
+    "role": "superadmin",
+    "id": "507f1f77bcf86cd799439011"
+  },
+  "expiresIn": "24h"
+}
+```
+
+## 🚨 **Important Authentication Changes**
+
+### **Separate Login Endpoints**
+
+- **Regular Admins**: Use `POST /api/admin/verify`
+- **Super Admins**: Use `POST /api/superadmin/verify`
+
+### **Why Separate Routes?**
+
+1. **Role-Based Validation**: Each endpoint validates the correct role during login
+2. **Enhanced Security**: Prevents role confusion and unauthorized access attempts
+3. **Clear API Structure**: Distinct endpoints for different user types
+4. **Better Error Messages**: Specific feedback for each authentication type
+
+### **Error Scenarios**
+
+- **Super Admin using regular endpoint**: "Invalid credentials. Use super admin login for super admin accounts."
+- **Regular Admin using super endpoint**: "Invalid credentials. Use regular admin login for admin accounts."
 
 ### 👑 Super Admin Management
 
@@ -563,28 +584,26 @@ Content-Type: application/json
 ### Complete Authentication Flow
 
 ```bash
-# 1. Create Admin
-curl -X POST http://localhost:3000/api/admin/create \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "TestPass123!", "confirmPassword": "TestPass123!"}'
+# Note: Admin creation is done by Super Admin via /api/superadmin/admins
+# This example assumes an admin account already exists
 
-# 2. Admin Login
+# 1. Admin Login
 ADMIN_TOKEN=$(curl -s -X POST http://localhost:3000/api/admin/verify \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "TestPass123!"}' | jq -r '.token')
 
-# 3. Generate Library Token
+# 2. Generate Library Token
 LIBRARY_TOKEN=$(curl -s -X POST http://localhost:3000/api/admin/library-token \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"description": "Test Token"}' | jq -r '.token.token')
 
-# 4. Device Authentication
+# 3. Device Authentication
 DEVICE_TOKEN=$(curl -s -X POST http://localhost:3000/device/auth \
   -H "Content-Type: application/json" \
   -d '{"token": "'$LIBRARY_TOKEN'", "appInfo": {"appName": "Test App", "version": "1.0.0"}}' | jq -r '.deviceToken')
 
-# 5. Access Network Info API
+# 4. Access Network Info API
 curl -X GET http://localhost:3000/api/network-info \
   -H "Authorization: Bearer $DEVICE_TOKEN"
 ```

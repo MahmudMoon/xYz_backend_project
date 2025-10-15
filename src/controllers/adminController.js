@@ -82,6 +82,51 @@ class AdminController {
   }
 
   /**
+   * POST /api/superadmin/verify
+   * Verify super admin credentials and return JWT token
+   */
+  async verifySuperAdmin(req, res, next) {
+    try {
+      const { email, password } = req.body;
+
+      const result = await AdminService.verifySuperAdmin(email, password);
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Super admin verification error:", error);
+
+      if (
+        error.message.includes("Invalid email or password") ||
+        error.message.includes("Invalid credentials")
+      ) {
+        return res.status(401).json({
+          success: false,
+          error: "Invalid email or password",
+          code: "INVALID_CREDENTIALS",
+        });
+      }
+
+      if (error.message.includes("Account is locked")) {
+        return res.status(423).json({
+          success: false,
+          error: error.message,
+          code: "ACCOUNT_LOCKED",
+        });
+      }
+
+      if (error.message.includes("Account is deactivated")) {
+        return res.status(403).json({
+          success: false,
+          error: "Super admin account is deactivated",
+          code: "ACCOUNT_DEACTIVATED",
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  /**
    * GET /api/admin/info
    * Get current logged-in admin information (requires JWT)
    */
@@ -247,69 +292,6 @@ class AdminController {
           success: false,
           error: "Admin not found",
           code: "ADMIN_NOT_FOUND",
-        });
-      }
-
-      next(error);
-    }
-  }
-
-  /**
-   * POST /api/admin/create
-   * Create a new admin (utility endpoint - might be restricted to super admin)
-   */
-  async createAdmin(req, res, next) {
-    try {
-      const { email, password, confirmPassword } = req.body;
-
-      // Input validation
-      if (!email || !password || !confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          error: "Email, password, and password confirmation are required",
-          code: "MISSING_ADMIN_DATA",
-        });
-      }
-
-      // Email format validation
-      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid email format",
-          code: "INVALID_EMAIL",
-        });
-      }
-
-      // Password confirmation validation
-      if (password !== confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          error: "Password and confirmation do not match",
-          code: "PASSWORD_MISMATCH",
-        });
-      }
-
-      // Password strength validation
-      if (password.length < 6) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must be at least 6 characters long",
-          code: "WEAK_PASSWORD",
-        });
-      }
-
-      const result = await AdminService.createAdmin({ email, password });
-
-      res.status(201).json(result);
-    } catch (error) {
-      console.error("Create admin error:", error);
-
-      if (error.message.includes("Admin with this email already exists")) {
-        return res.status(409).json({
-          success: false,
-          error: "Admin with this email already exists",
-          code: "ADMIN_EXISTS",
         });
       }
 

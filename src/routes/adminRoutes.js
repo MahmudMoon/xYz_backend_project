@@ -138,8 +138,8 @@ const handleValidationErrors = (req, res, next) => {
  *   post:
  *     tags:
  *       - Admin Authentication
- *     summary: Verify admin credentials
- *     description: Authenticate admin with email and password, returns JWT token
+ *     summary: Verify regular admin credentials
+ *     description: Authenticate regular admin with email and password, returns JWT token (regular admins only, super admins use /api/superadmin/verify)
  *     requestBody:
  *       required: true
  *       content:
@@ -368,87 +368,6 @@ router.delete(
   ],
   handleValidationErrors,
   adminController.deleteAdmin
-);
-
-/**
- * @swagger
- * /api/admin/create:
- *   post:
- *     tags:
- *       - Admin Management
- *     summary: Create new admin
- *     description: Create a new admin account (utility endpoint)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - confirmPassword
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "newadmin@example.com"
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 example: "newadminpassword123"
- *               confirmPassword:
- *                 type: string
- *                 minLength: 6
- *                 example: "newadminpassword123"
- *     responses:
- *       201:
- *         description: Admin created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Admin created successfully"
- *                 admin:
- *                   $ref: '#/components/schemas/Admin'
- *       400:
- *         description: Bad request - validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       409:
- *         description: Conflict - admin already exists
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.post(
-  "/create",
-  [
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Please provide a valid email address"),
-    body("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
-    body("confirmPassword").custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Password confirmation does not match password");
-      }
-      return true;
-    }),
-  ],
-  handleValidationErrors,
-  adminController.createAdmin
 );
 
 /**

@@ -84,6 +84,41 @@ const handleValidationErrors = (req, res, next) => {
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *     SuperAdminVerifyRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "superadmin@example.com"
+ *           description: Super admin email address
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *           example: "SuperSecurePassword123"
+ *           description: Super admin password
+ *     SuperAdminVerifyResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Super admin verified successfully"
+ *         token:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *           description: JWT token for super admin authentication
+ *         admin:
+ *           $ref: '#/components/schemas/AdminResponse'
+ *         expiresIn:
+ *           type: string
+ *           example: "24h"
+ *           description: Token expiration time
  */
 
 /**
@@ -92,6 +127,67 @@ const handleValidationErrors = (req, res, next) => {
  *   name: Super Admin
  *   description: Super admin management endpoints (requires super admin privileges)
  */
+
+/**
+ * @swagger
+ * /api/superadmin/verify:
+ *   post:
+ *     tags:
+ *       - Super Admin
+ *     summary: Verify super admin credentials
+ *     description: Authenticate super admin with email and password, returns JWT token (super admin only)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SuperAdminVerifyRequest'
+ *     responses:
+ *       200:
+ *         description: Super admin verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuperAdminVerifyResponse'
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - account deactivated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       423:
+ *         description: Account locked due to too many failed attempts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post(
+  "/verify",
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email address"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+  ],
+  handleValidationErrors,
+  adminController.verifySuperAdmin
+);
 
 /**
  * @swagger

@@ -3,13 +3,14 @@ const config = {
   PORT: process.env.PORT || 3000,
 
   // MongoDB configuration
-  MONGODB_URI: process.env.MONGODB_URI || "mongodb://localhost:27017/Db_demo",
+  MONGODB_URI:
+    process.env.MONGODB_URI || "mongodb://localhost:27017/xYz_backend_db",
 
   // Database configuration (legacy - for other databases)
   DB: {
     HOST: process.env.DB_HOST || "localhost",
     PORT: process.env.DB_PORT || 27017,
-    NAME: process.env.DB_NAME || "express_learning",
+    NAME: process.env.DB_NAME || "xYz_backend_db",
   },
 
   // JWT configuration (for future use)
