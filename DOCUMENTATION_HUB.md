@@ -39,7 +39,7 @@ graph TB
 
     subgraph "Super Admin System"
         SA[Super Admin] --> AM[Admin Management]
-        SA --> ST[System Statistics]
+        SA --> SO[System Overview]
         SA --> PR[Privilege Control]
     end
 
@@ -223,7 +223,7 @@ npm run manage-superadmin
 1. 👤 View Super Admin Information
 2. 🔒 Reset Super Admin Password (with current password verification)
 3. 🆘 Emergency Password Reset (when password unknown)
-4. 📊 View System Statistics
+4. 📊 View System Overview
 5. 👥 List All Admin Accounts
 6. 🚪 Exit
 

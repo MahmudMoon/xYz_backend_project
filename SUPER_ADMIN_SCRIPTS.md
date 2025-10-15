@@ -34,7 +34,7 @@ I've created a comprehensive suite of super admin management scripts for your pr
 - **Features**:
   - View super admin information (email, status, dates)
   - Reset super admin password securely
-  - View system statistics (admin counts, recent activity)
+  - View system overview (admin counts, recent activity)
   - List all admin accounts with status
   - Interactive menu system
   - Non-destructive operations
@@ -70,7 +70,7 @@ npm run manage-superadmin
 - Interactive menu with options:
   1. View super admin info
   2. Reset password
-  3. View system stats
+  3. View system overview
   4. List all admins
   5. Exit
 
@@ -174,7 +174,7 @@ npm run create-superadmin  # Create new with different credentials
 ### System Monitoring
 
 ```bash
-npm run manage-superadmin  # Choose option 3 (Statistics) or 4 (List Admins)
+npm run manage-superadmin  # Choose option 3 (System Overview) or 4 (List Admins)
 ```
 
 ### Development/Testing

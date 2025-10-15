@@ -140,16 +140,15 @@ Content-Type: application/json
 
 ### 👑 Super Admin Management
 
-| Method   | Endpoint                                       | Description                  | Authentication  |
-| -------- | ---------------------------------------------- | ---------------------------- | --------------- |
-| `POST`   | `/api/superadmin/create-admin`                 | Create new admin account     | Super Admin JWT |
-| `GET`    | `/api/superadmin/admins`                       | List all admin accounts      | Super Admin JWT |
-| `GET`    | `/api/superadmin/admins/:id`                   | Get specific admin details   | Super Admin JWT |
-| `PUT`    | `/api/superadmin/admins/:id`                   | Update admin information     | Super Admin JWT |
-| `DELETE` | `/api/superadmin/admins/:id`                   | Delete admin account         | Super Admin JWT |
-| `PUT`    | `/api/superadmin/admins/:id/toggle-status`     | Activate/deactivate admin    | Super Admin JWT |
-| `PUT`    | `/api/superadmin/admins/:id/revoke-privileges` | Revoke admin privileges      | Super Admin JWT |
-| `GET`    | `/api/superadmin/statistics`                   | Get comprehensive statistics | Super Admin JWT |
+| Method   | Endpoint                                       | Description                | Authentication  |
+| -------- | ---------------------------------------------- | -------------------------- | --------------- |
+| `POST`   | `/api/superadmin/create-admin`                 | Create new admin account   | Super Admin JWT |
+| `GET`    | `/api/superadmin/admins`                       | List all admin accounts    | Super Admin JWT |
+| `GET`    | `/api/superadmin/admins/:id`                   | Get specific admin details | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id`                   | Update admin information   | Super Admin JWT |
+| `DELETE` | `/api/superadmin/admins/:id`                   | Delete admin account       | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id/toggle-status`     | Activate/deactivate admin  | Super Admin JWT |
+| `PUT`    | `/api/superadmin/admins/:id/revoke-privileges` | Revoke admin privileges    | Super Admin JWT |
 
 #### Create Admin by Super Admin
 
@@ -244,45 +243,6 @@ Content-Type: application/json
 }
 ```
 
-#### Super Admin Statistics
-
-```bash
-GET /api/superadmin/statistics
-Authorization: Bearer <super_admin_jwt_token>
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "statistics": {
-    "adminStats": {
-      "totalAdmins": 5,
-      "activeAdmins": 4,
-      "inactiveAdmins": 1,
-      "recentLogins": 3
-    },
-    "tokenStats": {
-      "totalLibraryTokens": 12,
-      "activeTokens": 10,
-      "expiredTokens": 2,
-      "tokensUsedToday": 5
-    },
-    "deviceStats": {
-      "totalRegisteredDevices": 25,
-      "activeDevices": 20,
-      "devicesAuthenticatedToday": 15
-    },
-    "systemStats": {
-      "totalNetworkInfoRecords": 150,
-      "recordsCreatedToday": 8,
-      "systemUptime": "72h 15m"
-    }
-  }
-}
-```
-
 ### 🎫 Library Token Management
 
 | Method | Endpoint                                  | Description                | Authentication |
@@ -291,7 +251,6 @@ Authorization: Bearer <super_admin_jwt_token>
 | `GET`  | `/api/admin/library-tokens`               | Get admin's library tokens | Admin JWT      |
 | `GET`  | `/api/admin/library-tokens/all`           | Get all library tokens     | Admin JWT      |
 | `PUT`  | `/api/admin/library-token/:id/deactivate` | Deactivate library token   | Admin JWT      |
-| `GET`  | `/api/admin/statistics`                   | Get token statistics       | Admin JWT      |
 
 #### Generate Library Token
 
@@ -329,13 +288,13 @@ Content-Type: application/json
 
 ### 📱 Device Authentication
 
-| Method | Endpoint                     | Description                             | Authentication |
-| ------ | ---------------------------- | --------------------------------------- | -------------- |
-| `POST` | `/device/auth`               | Authenticate device using library token | None           |
-| `GET`  | `/device/validate-token`     | Validate device JWT token               | None           |
-| `GET`  | `/device/apps`               | Get authenticated apps list             | None           |
-| `GET`  | `/device/statistics`         | Get app usage statistics                | None           |
-| `PUT`  | `/device/app/:id/deactivate` | Deactivate app info                     | None           |
+| Method | Endpoint                 | Description                             | Authentication |
+| ------ | ------------------------ | --------------------------------------- | -------------- |
+| `POST` | `/device/auth`           | Authenticate device using library token | None           |
+| `GET`  | `/device/validate-token` | Validate device JWT token               | None           |
+| `GET`  | `/device/apps`           | Get authenticated apps list             | None           |
+
+| `PUT` | `/device/app/:id/deactivate` | Deactivate app info | None |
 
 #### Device Authentication
 
@@ -386,8 +345,8 @@ Content-Type: application/json
 | `PUT`    | `/api/network-info/:id`              | Update network information  | Device JWT     |
 | `DELETE` | `/api/network-info/:id`              | Delete network information  | Device JWT     |
 | `GET`    | `/api/network-info/device/:deviceId` | Get network info by device  | Device JWT     |
-| `GET`    | `/api/network-info/statistics`       | Get network statistics      | Device JWT     |
-| `POST`   | `/api/network-info/bulk`             | Bulk create network info    | Device JWT     |
+
+| `POST` | `/api/network-info/bulk` | Bulk create network info | Device JWT |
 
 #### Create Network Information
 

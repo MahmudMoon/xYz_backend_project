@@ -9,7 +9,7 @@ The super admin system provides hierarchical admin management with the following
 - **Single Super Admin**: Only one super admin can exist in the system
 - **Admin Management**: Create, manage, revoke, restore, and delete regular admin accounts
 - **Role-based Access Control**: Separate permissions for super admin and regular admin operations
-- **Comprehensive Statistics**: Detailed system usage and admin statistics
+- **Comprehensive Monitoring**: Detailed system usage and admin oversight
 - **Secure CLI Setup**: Command-line tool for initial super admin creation
 
 ## 🚀 Quick Setup
@@ -61,7 +61,7 @@ npm run create-superadmin
 # Delete super admin account (with security checks)
 npm run delete-superadmin
 
-# Manage super admin (view info, reset password, statistics)
+# Manage super admin (view info, reset password, system overview)
 npm run manage-superadmin
 
 # Test all super admin functionality
@@ -71,8 +71,9 @@ npm run test-superadmin
 ### Script Details
 
 #### Create Super Admin (`npm run create-superadmin`)
+
 - **Purpose**: Create the initial super admin account
-- **Features**: 
+- **Features**:
   - Password strength validation
   - Email validation
   - Prevents duplicate super admin creation
@@ -80,6 +81,7 @@ npm run test-superadmin
 - **Usage**: Run once during initial setup
 
 #### Delete Super Admin (`npm run delete-superadmin`)
+
 - **Purpose**: Permanently delete the super admin account
 - **Security Features**:
   - Multiple confirmation prompts
@@ -87,23 +89,25 @@ npm run test-superadmin
   - Typed confirmation phrase required: "DELETE SUPER ADMIN"
   - 5-second countdown before deletion
   - Audit logging
-- **Use Cases**: 
+- **Use Cases**:
   - System reset/maintenance
   - Development/testing cleanup
   - Credential reset (delete + recreate)
 - **⚠️ WARNING**: This action cannot be undone!
 
 #### Manage Super Admin (`npm run manage-superadmin`)
+
 - **Purpose**: Interactive management console
 - **Features**:
   - View super admin information
   - Reset super admin password securely
-  - View system statistics (admin counts, recent activity)
+  - View system overview (admin counts, recent activity)
   - List all admin accounts
   - Non-destructive operations only
 - **Usage**: Regular maintenance and monitoring
 
 #### Test Super Admin (`npm run test-superadmin`)
+
 - **Purpose**: Automated testing of super admin functionality
 - **Features**:
   - Complete API endpoint testing
@@ -319,50 +323,6 @@ curl -X DELETE "http://localhost:3000/api/superadmin/admins/507f1f77bcf86cd79943
     "email": "admin@example.com"
   },
   "deletedAt": "2024-01-01T12:00:00.000Z"
-}
-```
-
-### 6. Get System Statistics
-
-```bash
-GET /api/superadmin/statistics
-```
-
-**Example:**
-
-```bash
-curl -X GET "http://localhost:3000/api/superadmin/statistics" \
-  -H "Authorization: Bearer your-jwt-token"
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "message": "Super admin statistics retrieved successfully",
-  "statistics": {
-    "admins": {
-      "total": 15,
-      "active": 12,
-      "inactive": 3
-    },
-    "libraryTokens": {
-      "total": 45,
-      "active": 30,
-      "inactive": 15,
-      "totalUsage": 1250,
-      "averageUsage": 27.78
-    },
-    "recentAdmins": [
-      {
-        "id": "507f1f77bcf86cd799439011",
-        "email": "recent@example.com",
-        "role": "admin",
-        "createdAt": "2024-01-01T00:00:00.000Z"
-      }
-    ]
-  }
 }
 ```
 

@@ -635,7 +635,7 @@ npm run manage-superadmin
 # 1. View Super Admin Information
 # 2. Reset Password (with verification)
 # 3. Emergency Password Reset
-# 4. View System Statistics
+# 4. View System Overview
 # 5. List All Admin Accounts
 ```
 

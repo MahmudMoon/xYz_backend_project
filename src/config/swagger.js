@@ -206,41 +206,7 @@ const options = {
             },
           },
         },
-        TokenStatistics: {
-          type: "object",
-          properties: {
-            totalTokens: {
-              type: "number",
-              example: 25,
-              description: "Total number of tokens",
-            },
-            activeTokens: {
-              type: "number",
-              example: 20,
-              description: "Number of active tokens",
-            },
-            expiredTokens: {
-              type: "number",
-              example: 3,
-              description: "Number of expired tokens",
-            },
-            validTokens: {
-              type: "number",
-              example: 17,
-              description: "Number of valid (active and not expired) tokens",
-            },
-            totalUsage: {
-              type: "number",
-              example: 150,
-              description: "Total token usage count",
-            },
-            avgUsage: {
-              type: "number",
-              example: 6,
-              description: "Average usage per token",
-            },
-          },
-        },
+
         ErrorResponse: {
           type: "object",
           properties: {

@@ -129,7 +129,7 @@ This project includes a comprehensive **Super Admin Management System** with CLI
 - **👤 Admin Management**: Create, manage, and revoke admin privileges
 - **🔒 Secure Authentication**: Multi-layer password verification system
 - **🆘 Emergency Access**: Password recovery for emergency situations
-- **📊 System Monitoring**: Complete admin statistics and oversight
+- **📊 System Monitoring**: Complete admin oversight and management
 - **🛡️ Role-Based Access**: Hierarchical admin → superadmin privilege system
 
 ### 🛠️ Available Scripts
@@ -162,7 +162,7 @@ npm run manage-superadmin
 1. 👤 View Super Admin Information
 2. 🔒 Reset Super Admin Password (with current password verification)
 3. 🆘 Emergency Password Reset (when password unknown)
-4. 📊 View System Statistics
+4. 📊 View System Overview
 5. 👥 List All Admin Accounts
 6. 🚪 Exit
 ════════════════════════════════════════════════════════════════════════════════
@@ -173,7 +173,7 @@ npm run manage-superadmin
 - **Profile Management**: View super admin details and creation info
 - **Secure Password Reset**: Verify current password before updating
 - **Emergency Recovery**: Reset password when current password is lost
-- **System Overview**: View total admins, active accounts, and statistics
+- **System Overview**: View total admins, active accounts, and system health
 - **Admin Oversight**: List all admin accounts with status and roles
 
 #### 3. Test Super Admin (Integrated)
@@ -304,7 +304,6 @@ This project implements a sophisticated **multi-tier authentication system**:
 - `DELETE /api/superadmin/admins/:id` - Delete admin account
 - `PUT /api/superadmin/admins/:id/toggle-status` - Activate/deactivate admin
 - `PUT /api/superadmin/admins/:id/revoke-privileges` - Revoke admin privileges
-- `GET /api/superadmin/statistics` - Get comprehensive admin statistics
 
 #### 🎫 Library Token Management (`/api/admin/*` - Admin Auth Required)
 
@@ -312,14 +311,13 @@ This project implements a sophisticated **multi-tier authentication system**:
 - `GET /api/admin/library-tokens` - Get admin's library tokens
 - `GET /api/admin/library-tokens/all` - Get all library tokens (admin only)
 - `PUT /api/admin/library-token/:id/deactivate` - Deactivate library token
-- `GET /api/admin/statistics` - Get library token statistics
 
 #### 📱 Device Authentication (`/device/*` - No Auth Required)
 
 - `POST /device/auth` - Authenticate device using library token → get device JWT
 - `GET /device/validate-token` - Validate device JWT token
 - `GET /device/apps` - Get authenticated apps list
-- `GET /device/statistics` - Get app usage statistics
+
 - `PUT /device/app/:id/deactivate` - Deactivate app info
 
 #### 🌐 Network Information (`/api/network-info/*` - Device Auth Required)
@@ -548,7 +546,7 @@ open ./docs/API_DOCUMENTATION.md    # Complete API Documentation
 
 - **🔐 Multi-tier Authentication**: Admin → Library Token → Device JWT flow
 - **⚡ Short-lived Tokens**: 5-minute device JWTs for enhanced security
-- **📊 Usage Analytics**: Track token usage and app authentication statistics
+- **📊 Usage Tracking**: Monitor token usage and app authentication activity
 - **🛡️ Rate Limiting**: Prevent brute force attacks on authentication endpoints
 - **📖 Interactive Docs**: Complete Swagger UI with try-it-out functionality
 - **🗄️ Database Relations**: Complex MongoDB relationships with proper indexing

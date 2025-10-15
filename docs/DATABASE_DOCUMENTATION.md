@@ -643,8 +643,8 @@ const admins = await Admin.find({
   .limit(10)
   .skip(page * 10);
 
-// Admin statistics
-const stats = await Admin.aggregate([
+// Admin summary counts
+const counts = await Admin.aggregate([
   {
     $group: {
       _id: "$role",
@@ -667,8 +667,8 @@ const tokens = await LibraryToken.find({
   expiresAt: { $gt: new Date() },
 }).populate("adminId", "email");
 
-// Token usage statistics
-const tokenStats = await LibraryToken.aggregate([
+// Token usage summary
+const tokenCounts = await LibraryToken.aggregate([
   {
     $group: {
       _id: "$adminId",
@@ -709,8 +709,8 @@ const networks = await NetworkInfo.find({
   })
   .sort({ priority: -1, createdAt: -1 });
 
-// Network statistics by security type
-const securityStats = await NetworkInfo.aggregate([
+// Network summary by security type
+const securitySummary = await NetworkInfo.aggregate([
   {
     $group: {
       _id: "$securityType",
@@ -765,8 +765,8 @@ const tokenCount = await LibraryToken.countDocuments({
   isActive: true,
 }).lean();
 
-// Aggregate for complex statistics
-const dailyStats = await NetworkInfo.aggregate([
+// Aggregate for complex summaries
+const dailySummary = await NetworkInfo.aggregate([
   {
     $match: {
       createdAt: {
@@ -920,7 +920,7 @@ const dbHealth = async () => {
     // Connection check
     const isConnected = mongoose.connection.readyState === 1;
 
-    // Collection stats
+    // Collection info
     const adminCount = await Admin.countDocuments();
     const tokenCount = await LibraryToken.countDocuments({ isActive: true });
     const appCount = await AppInfo.countDocuments({ isActive: true });
@@ -968,8 +968,8 @@ const cleanupExpiredTokens = async () => {
   return result.deletedCount;
 };
 
-// Update usage statistics
-const updateUsageStats = async () => {
+// Update usage counts
+const updateUsageCounts = async () => {
   const pipeline = [
     {
       $lookup: {
@@ -995,8 +995,8 @@ const updateUsageStats = async () => {
     },
   ];
 
-  const stats = await LibraryToken.aggregate(pipeline);
-  return stats;
+  const result = await LibraryToken.aggregate(pipeline);
+  return result;
 };
 ```
 
