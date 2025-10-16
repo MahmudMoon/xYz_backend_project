@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
+const helmet = require("helmet");
 
 // Import database connection
 const database = require("./config/database");
@@ -21,7 +22,22 @@ const { swaggerUi, specs } = require("./config/swagger");
 
 const app = express();
 
-// Middleware
+// Security middleware - should be first
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // For Swagger UI
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // For API compatibility
+  })
+);
+
+// CORS middleware
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
