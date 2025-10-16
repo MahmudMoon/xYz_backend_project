@@ -8,9 +8,11 @@ The super admin system provides hierarchical admin management with the following
 
 - **Single Super Admin**: Only one super admin can exist in the system
 - **Admin Management**: Create, manage, revoke, restore, and delete regular admin accounts
+- **Separate Authentication**: Dedicated super admin login endpoint for enhanced security
 - **Role-based Access Control**: Separate permissions for super admin and regular admin operations
 - **Comprehensive Monitoring**: Detailed system usage and admin oversight
 - **Secure CLI Setup**: Command-line tool for initial super admin creation
+- **Security Hardened**: Removed insecure endpoints, enhanced authentication validation
 
 ## 🚀 Quick Setup
 
@@ -120,10 +122,10 @@ npm run test-superadmin
 
 ### Super Admin Login
 
-Super admin uses the same login endpoint as regular admins:
+**🚨 SECURITY UPDATE**: Super admin now uses a **dedicated authentication endpoint** separate from regular admins:
 
 ```bash
-POST /api/admin/login
+POST /api/superadmin/verify
 Content-Type: application/json
 
 {
@@ -137,16 +139,23 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Login successful",
+  "message": "Super admin verified successfully",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "admin": {
     "id": "507f1f77bcf86cd799439011",
     "email": "superadmin@example.com",
     "role": "superadmin",
     "isActive": true
-  }
+  },
+  "expiresIn": "24h"
 }
 ```
+
+### Authentication Security Enhancement
+
+- **Separate Endpoints**: Super admin and regular admin use different login routes
+- **Role Validation**: Each endpoint validates the correct role during authentication
+- **Enhanced Security**: Prevents role confusion and unauthorized access attempts
 
 **Important:** Include the JWT token in the `Authorization` header for all super admin endpoints:
 
@@ -154,7 +163,27 @@ Content-Type: application/json
 Authorization: Bearer your-jwt-token-here
 ```
 
-## 📚 API Endpoints
+## � Security Improvements
+
+### Recent Security Enhancements
+
+- **🚨 Removed Insecure Endpoint**: The old `/api/admin/create` endpoint has been permanently removed for security reasons
+- **🎯 Dedicated Authentication**: Super admin uses separate login endpoint `/api/superadmin/verify`
+- **🛡️ Role Validation**: Enhanced role checking prevents unauthorized access attempts
+- **⚡ Secure Admin Creation**: All admin accounts must be created through super admin with proper authentication
+
+### Admin Creation Process
+
+**✅ Secure Method (Required):**
+
+- Super admin logs in via `/api/superadmin/verify`
+- Creates admins via `/api/superadmin/admins` with JWT authentication
+
+**❌ Insecure Method (Removed):**
+
+- Direct admin creation without authentication - **NO LONGER AVAILABLE**
+
+## �📚 API Endpoints
 
 ### Base URL: `/api/superadmin`
 

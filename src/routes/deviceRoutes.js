@@ -64,10 +64,14 @@ const handleValidationErrors = (req, res, next) => {
  *         message:
  *           type: string
  *           example: "Device authenticated successfully"
- *         deviceToken:
+ *         accessToken:
  *           type: string
  *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *           description: "Short-lived JWT token (5 minutes)"
+ *         refreshToken:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *           description: "Long-lived JWT refresh token (7 days)"
  *         expiresIn:
  *           type: string
  *           example: "5m"
@@ -295,6 +299,75 @@ router.get(
   ],
   handleValidationErrors,
   deviceController.validateToken
+);
+
+/**
+ * @swagger
+ * /device/refresh-token:
+ *   post:
+ *     tags:
+ *       - Device Authentication
+ *     summary: Refresh JWT token
+ *     description: Refresh short-lived JWT token using a valid refresh token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 description: "Valid JWT refresh token (7 days)"
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token refreshed successfully"
+ *                 accessToken:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                   description: "New short-lived JWT token (5 minutes)"
+ *                 expiresIn:
+ *                   type: string
+ *                   example: "5m"
+ *                   description: "Token expiration time"
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post(
+  "/refresh-token",
+  [body("refreshToken").isString().withMessage("Refresh token is required")],
+  handleValidationErrors,
+  deviceController.refreshToken
 );
 
 module.exports = router;

@@ -8,7 +8,7 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
 
 - **MVC Architecture**: Well-organized Model-View-Controller structure with service layers
 - **JWT Authentication**: Multi-tier authentication system (Admin + Device tokens)
-- **Device Authentication**: Library token-based device authentication with short-lived JWT tokens
+- **Device Authentication**: Library token-based device authentication with short-lived JWT + refresh tokens
 - **MongoDB Integration**: Complete database integration with Mongoose ODM
 - **Super Admin System**: Hierarchical role-based admin management with CLI tools
 - **Admin Management**: Full admin CRUD operations with secure authentication
@@ -17,7 +17,7 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
 - **Swagger Documentation**: Interactive API documentation with OpenAPI 3.0
 - **Error Handling**: Comprehensive error handling with detailed logging
 - **Input Validation**: Robust validation using express-validator
-- **Security Middleware**: Rate limiting, CORS, Helmet, and authentication guards
+- **Security Middleware**: Rate limiting, CORS, **Helmet security headers**, and authentication guards
 - **Testing Ready**: Structured for unit tests with Jest and Supertest
 
 ## 📁 Project Structure
@@ -78,11 +78,23 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
    ```
 
 4. **Configure MongoDB**
+
    - Install MongoDB locally or set up MongoDB Atlas
    - Update the MongoDB connection string in your `.env` file
+
    ```env
+   # Database
    MONGODB_URI=mongodb://localhost:27017/express_learning
+
+   # JWT Configuration
    JWT_SECRET=your_super_secure_jwt_secret_key_here
+   JWT_EXPIRES_IN=24h
+
+   # Refresh Token Configuration (NEW)
+   JWT_REFRESH_SECRET=your_secure_refresh_token_secret_different_from_jwt_secret
+   JWT_REFRESH_EXPIRES_IN=7d
+
+   # Server
    NODE_ENV=development
    PORT=3000
    ```
@@ -263,22 +275,31 @@ This project includes comprehensive **Swagger/OpenAPI 3.0** documentation for al
 
 ## 🔐 Authentication System
 
-This project implements a sophisticated **multi-tier authentication system**:
+This project implements a sophisticated **4-tier authentication system** with refresh token support:
 
 ### Authentication Flow
 
 ```
-1. Admin Login → JWT Token (24h)
+1. Admin/Super Admin Login → JWT Token (24h) [Separate Endpoints]
 2. Generate Library Token → 32-char hash (30 days)
-3. Device Auth → Short-lived JWT (5 minutes)
-4. Access Protected APIs → Network Info endpoints
+3. Device Auth → Access Token (5min) + Refresh Token (7 days)
+4. Token Refresh → Seamless renewal without re-authentication
+5. Access Protected APIs → Network Info endpoints
 ```
 
 ### 🔑 Authentication Tiers
 
-1. **Admin Authentication**: Long-lived JWT tokens for administrative operations
+1. **Admin/Super Admin Authentication**: Long-lived JWT tokens with separate login endpoints
 2. **Library Tokens**: 32-character hash tokens for device registration
-3. **Device Authentication**: Short-lived JWT tokens for API access
+3. **Device Authentication**: Short-lived JWT tokens with refresh token support
+4. **Token Refresh**: Automatic renewal system for uninterrupted access
+
+### 🚨 Security Enhancements
+
+- **🛡️ Helmet Security**: HTTP security headers with Content Security Policy
+- **🔐 Separate Login Routes**: Distinct endpoints for admin vs super admin
+- **🔄 Refresh Tokens**: 7-day refresh tokens for seamless user experience
+- **🎯 Role-Based Validation**: Proper role checking during authentication
 
 ## 📋 API Endpoints
 
@@ -289,14 +310,14 @@ This project implements a sophisticated **multi-tier authentication system**:
 
 #### 👤 Admin Authentication (`/api/admin/*`)
 
-- `POST /api/admin/verify` - **Regular admin** login authentication
+- `POST /api/admin/verify` - **Regular admin** login authentication (separate endpoint)
 - `GET /api/admin/profile` - Get admin profile (requires admin JWT)
 - `PUT /api/admin/profile` - Update admin profile (requires admin JWT)
 - `DELETE /api/admin/profile` - Delete admin account (requires admin JWT)
 
 #### 👑 Super Admin Management (`/api/superadmin/*`)
 
-- `POST /api/superadmin/verify` - **Super admin** login authentication (no auth required)
+- `POST /api/superadmin/verify` - **Super admin** login authentication (dedicated endpoint)
 - `POST /api/superadmin/admins` - Create new admin account (requires super admin JWT)
 - `GET /api/superadmin/admins` - List all admin accounts with details (requires super admin JWT)
 - `GET /api/superadmin/admins/:id` - Get specific admin account details (requires super admin JWT)
@@ -314,10 +335,10 @@ This project implements a sophisticated **multi-tier authentication system**:
 
 #### 📱 Device Authentication (`/device/*` - No Auth Required)
 
-- `POST /device/auth` - Authenticate device using library token → get device JWT
+- `POST /device/auth` - Authenticate device using library token → get access + refresh tokens
+- `POST /device/refresh-token` - **NEW:** Refresh expired access token using refresh token
 - `GET /device/validate-token` - Validate device JWT token
 - `GET /device/apps` - Get authenticated apps list
-
 - `PUT /device/app/:id/deactivate` - Deactivate app info
 
 #### 🌐 Network Information (`/api/network-info/*` - Device Auth Required)
@@ -354,11 +375,10 @@ curl -X POST http://localhost:3000/api/admin/library-token \
 # Returns: { "token": "32-character-hash-token", ... }
 ```
 
-**3. Device Authentication:**
-
-**3. Device Authentication:**
+**3. Device Authentication (with Refresh Token):**
 
 ```bash
+# Get access and refresh tokens
 curl -X POST http://localhost:3000/device/auth \
   -H "Content-Type: application/json" \
   -d '{
@@ -368,16 +388,23 @@ curl -X POST http://localhost:3000/device/auth \
       "version": "1.2.3"
     }
   }'
-# Returns: { "deviceToken": "device-jwt-token", ... }
+# Returns: { "accessToken": "5min-jwt-token", "refreshToken": "7day-jwt-token", ... }
 ```
 
 **4. Access Network APIs:**
 
-**5. Access Protected Network Info API:**
-
 ```bash
 curl -X GET http://localhost:3000/api/network-info \
-  -H "Authorization: Bearer {device-jwt-token}"
+  -H "Authorization: Bearer {access-token}"
+```
+
+**5. Refresh Token (when access token expires):**
+
+```bash
+curl -X POST http://localhost:3000/device/refresh-token \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken": "7day-refresh-token"}'
+# Returns: { "accessToken": "new-5min-jwt-token", ... }
 ```
 
 **6. Create Network Information:**
@@ -538,10 +565,13 @@ open ./docs/API_DOCUMENTATION.md    # Complete API Documentation
 
 ### ✨ Advanced Features Implemented
 
-- **🔐 Multi-tier Authentication**: Admin → Library Token → Device JWT flow
-- **⚡ Short-lived Tokens**: 5-minute device JWTs for enhanced security
+- **🔐 4-Tier Authentication**: Admin → Library Token → Device JWT + Refresh Token flow
+- **🔄 Refresh Tokens**: Seamless 7-day refresh tokens for uninterrupted access
+- **🛡️ Helmet Security**: HTTP security headers with Content Security Policy
+- **🎯 Separate Admin Routes**: Dedicated endpoints for admin vs super admin authentication
+- **⚡ Short-lived Access Tokens**: 5-minute device JWTs with automatic renewal capability
 - **📊 Usage Tracking**: Monitor token usage and app authentication activity
-- **🛡️ Rate Limiting**: Prevent brute force attacks on authentication endpoints
+- **� Rate Limiting**: Prevent brute force attacks on authentication endpoints
 - **📖 Interactive Docs**: Complete Swagger UI with try-it-out functionality
 - **🗄️ Database Relations**: Complex MongoDB relationships with proper indexing
 - **🔄 Graceful Shutdown**: Production-ready server lifecycle management

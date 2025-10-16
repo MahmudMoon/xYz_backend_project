@@ -23,24 +23,41 @@ The complete interactive API documentation is available through Swagger UI when 
 
 ### Overview
 
-This API implements a sophisticated **3-tier authentication system**:
+This API implements a sophisticated **4-tier authentication system** with refresh token support:
 
-1. **Admin Authentication** → Long-lived JWT (24 hours)
+1. **Admin/Super Admin Authentication** → Long-lived JWT (24 hours) with separate endpoints
 2. **Library Token Generation** → 32-character hash tokens (30 days)
-3. **Device Authentication** → Short-lived JWT (5 minutes)
+3. **Device Authentication** → Short-lived JWT (5 minutes) + Refresh Token (7 days)
+4. **Token Refresh** → Seamless token renewal without re-authentication
 
 ### Authentication Flow Diagram
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Admin Login   │───▶│ Library Token   │───▶│ Device Auth     │───▶│ API Access      │
-│                 │    │ Generation      │    │                 │    │                 │
-│ POST /api/admin │    │ POST /api/admin │    │ POST /device    │    │ /api/network-   │
-│ /verify         │    │ /library-token  │    │ /auth           │    │ info/*          │
-│                 │    │                 │    │                 │    │                 │
-│ Returns: Admin  │    │ Returns: 32-char│    │ Returns: Device │    │ Requires: Device│
-│ JWT (24h)       │    │ Hash Token      │    │ JWT (5min)      │    │ JWT Token       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+┌──────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Admin/SuperAdmin │───▶│ Library Token   │───▶│ Device Auth     │───▶│ API Access      │
+│ Login            │    │ Generation      │    │                 │    │                 │
+│                  │    │                 │    │ POST /device    │    │ /api/network-   │
+│ POST /api/admin/ │    │ POST /api/admin │    │ /auth           │    │ info/*          │
+│ verify           │    │ /library-token  │    │                 │    │                 │
+│ POST /api/       │    │                 │    │ Returns:        │    │ Requires:       │
+│ superadmin/verify│    │ Returns: 32-char│    │ • Access Token  │    │ • Device JWT    │
+│                  │    │ Hash Token      │    │   (5min)        │    │   Token         │
+│ Returns: Admin/  │    │                 │    │ • Refresh Token │    │ • Auto-refresh  │
+│ SuperAdmin JWT   │    │                 │    │   (7 days)      │    │   via refresh   │
+│ (24h)            │    │                 │    │                 │    │   endpoint      │
+└──────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                        │
+                                                        ▼
+                                               ┌─────────────────┐
+                                               │ Token Refresh   │
+                                               │                 │
+                                               │ POST /device/   │
+                                               │ refresh-token   │
+                                               │                 │
+                                               │ Returns: New    │
+                                               │ Access Token    │
+                                               │ (5min)          │
+                                               └─────────────────┘
 ```
 
 ---
@@ -309,13 +326,13 @@ Content-Type: application/json
 
 ### 📱 Device Authentication
 
-| Method | Endpoint                 | Description                             | Authentication |
-| ------ | ------------------------ | --------------------------------------- | -------------- |
-| `POST` | `/device/auth`           | Authenticate device using library token | None           |
-| `GET`  | `/device/validate-token` | Validate device JWT token               | None           |
-| `GET`  | `/device/apps`           | Get authenticated apps list             | None           |
-
-| `PUT` | `/device/app/:id/deactivate` | Deactivate app info | None |
+| Method | Endpoint                     | Description                             | Authentication |
+| ------ | ---------------------------- | --------------------------------------- | -------------- |
+| `POST` | `/device/auth`               | Authenticate device using library token | None           |
+| `POST` | `/device/refresh-token`      | Refresh device JWT token (NEW)          | None           |
+| `GET`  | `/device/validate-token`     | Validate device JWT token               | None           |
+| `GET`  | `/device/apps`               | Get authenticated apps list             | None           |
+| `PUT`  | `/device/app/:id/deactivate` | Deactivate app info                     | None           |
 
 #### Device Authentication
 
@@ -332,13 +349,14 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
+**Response (Updated with Refresh Token):**
 
 ```json
 {
   "success": true,
   "message": "Device authenticated successfully",
-  "deviceToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresIn": "5m",
   "appInfo": {
     "appName": "My Mobile App",
@@ -353,6 +371,30 @@ Content-Type: application/json
     "validity": "2025-12-31T23:59:59.000Z",
     "usageCount": 1
   }
+}
+```
+
+#### Token Refresh (NEW)
+
+When the 5-minute access token expires, use the refresh token to get a new access token without re-authenticating:
+
+```bash
+POST /device/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "New access token generated successfully",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": "5m"
 }
 ```
 
@@ -450,8 +492,36 @@ Content-Type: application/json
 ### Security Headers
 
 - **CORS**: Configured for development/production environments
-- **Helmet**: Security headers for production deployment
+- **Helmet**: Enhanced security headers with Content Security Policy (CSP)
 - **Input Validation**: Comprehensive validation using express-validator
+
+#### Helmet Security Configuration
+
+The API now includes **Helmet.js** middleware for enhanced security:
+
+```javascript
+// Security headers automatically applied to all responses
+helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: true,
+});
+```
+
+**Security Headers Added:**
+
+- `Content-Security-Policy`: Prevents XSS attacks
+- `X-Content-Type-Options`: Prevents MIME type sniffing
+- `X-Frame-Options`: Prevents clickjacking
+- `X-XSS-Protection`: Enables XSS filtering
+- `Strict-Transport-Security`: Enforces HTTPS (production)
+- `Referrer-Policy`: Controls referrer information
 
 ---
 
@@ -598,14 +668,26 @@ LIBRARY_TOKEN=$(curl -s -X POST http://localhost:3000/api/admin/library-token \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"description": "Test Token"}' | jq -r '.token.token')
 
-# 3. Device Authentication
-DEVICE_TOKEN=$(curl -s -X POST http://localhost:3000/device/auth \
+# 3. Device Authentication (with Refresh Token)
+DEVICE_AUTH=$(curl -s -X POST http://localhost:3000/device/auth \
   -H "Content-Type: application/json" \
-  -d '{"token": "'$LIBRARY_TOKEN'", "appInfo": {"appName": "Test App", "version": "1.0.0"}}' | jq -r '.deviceToken')
+  -d '{"token": "'$LIBRARY_TOKEN'", "appInfo": {"appName": "Test App", "version": "1.0.0"}}')
+
+ACCESS_TOKEN=$(echo $DEVICE_AUTH | jq -r '.accessToken')
+REFRESH_TOKEN=$(echo $DEVICE_AUTH | jq -r '.refreshToken')
 
 # 4. Access Network Info API
 curl -X GET http://localhost:3000/api/network-info \
-  -H "Authorization: Bearer $DEVICE_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+
+# 5. Refresh Token when Access Token expires (5min)
+NEW_ACCESS_TOKEN=$(curl -s -X POST http://localhost:3000/device/refresh-token \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken": "'$REFRESH_TOKEN'"}' | jq -r '.accessToken')
+
+# 6. Continue API access with new token
+curl -X GET http://localhost:3000/api/network-info \
+  -H "Authorization: Bearer $NEW_ACCESS_TOKEN"
 ```
 
 ---
@@ -626,6 +708,10 @@ MONGODB_URI=mongodb://localhost:27017/express_learning
 JWT_SECRET=your_super_secure_jwt_secret_minimum_32_characters
 JWT_EXPIRES_IN=24h
 DEVICE_JWT_EXPIRES_IN=5m
+
+# Refresh Token Configuration (NEW)
+JWT_REFRESH_SECRET=your_super_secure_refresh_token_secret_different_from_jwt_secret
+JWT_REFRESH_EXPIRES_IN=7d
 
 # Rate Limiting
 AUTH_RATE_LIMIT_MAX=5
@@ -666,10 +752,13 @@ The API includes optimized database indexes for:
 - ✅ Rate limiting configured
 - ✅ Input validation on all endpoints
 - ✅ Error messages don't expose sensitive information
-- ✅ JWT secrets are strong and secure
+- ✅ JWT secrets are strong and secure (separate for access & refresh tokens)
 - ✅ Database connection encrypted
 - ✅ CORS configured for production domains
-- ✅ Security headers enabled
+- ✅ **Helmet security headers enabled** (Content Security Policy, XSS Protection)
+- ✅ **Separate authentication endpoints** for admin roles
+- ✅ **Refresh token implementation** for seamless token renewal
+- ✅ **Role-based access control** with proper validation
 
 ### Scaling Considerations
 

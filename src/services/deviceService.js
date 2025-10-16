@@ -67,10 +67,18 @@ class DeviceService {
         libraryToken: token,
       });
 
+      const refreshToken = this.generateRefreshToken({
+        appInfoId: savedAppInfo._id,
+        appName: savedAppInfo.appName,
+        version: savedAppInfo.version,
+        deviceToken,
+      });
+
       return {
         success: true,
         message: "Device authenticated successfully",
-        deviceToken,
+        accessToken: deviceToken,
+        refreshToken: refreshToken,
         expiresIn: "5m",
         appInfo: savedAppInfo.toJSON(),
         tokenInfo: {
@@ -100,6 +108,23 @@ class DeviceService {
     const secret = process.env.JWT_SECRET || "fallback_secret_key";
     const options = {
       expiresIn: "5m", // 5 minutes
+      issuer: "express_learning_api",
+      audience: "device",
+    };
+
+    return jwt.sign(tokenPayload, secret, options);
+  }
+
+  static generateRefreshToken(payload) {
+    const tokenPayload = {
+      ...payload,
+      type: "refresh",
+      iat: Math.floor(Date.now() / 1000),
+    };
+
+    const secret = process.env.JWT_REFRESH_SECRET || "fallback_secret_key";
+    const options = {
+      expiresIn: "7d", // 7 days
       issuer: "express_learning_api",
       audience: "device",
     };
@@ -181,6 +206,39 @@ class DeviceService {
         valid: false,
         reason: error.message,
       };
+    }
+  }
+
+  static async generateNewAccessToken(refreshToken) {
+    try {
+      if (!refreshToken) {
+        throw new Error("Refresh token is required");
+      }
+
+      const secret = process.env.JWT_REFRESH_SECRET || "fallback_secret_key";
+      const decoded = jwt.verify(refreshToken, secret);
+
+      if (decoded.type !== "refresh") {
+        throw new Error("Invalid token type");
+      }
+
+      // Generate new short-lived device JWT token (5 minutes)
+      const newDeviceToken = this.generateDeviceToken({
+        appInfoId: decoded.appInfoId,
+        appName: decoded.appName,
+        version: decoded.version,
+        libraryToken: decoded.libraryToken,
+      });
+
+      return {
+        success: true,
+        message: "New access token generated successfully",
+        accessToken: newDeviceToken,
+        expiresIn: "5m",
+      };
+    } catch (error) {
+      console.error("Generate new access token error:", error);
+      throw new Error("Invalid or expired refresh token");
     }
   }
 }

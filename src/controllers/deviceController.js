@@ -188,6 +188,31 @@ class DeviceController {
       next(error);
     }
   }
+
+  /**
+   * POST /device/refresh-token
+   * Refresh device token using a valid refresh token
+   */
+  async refreshToken(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return res.status(400).json({
+          success: false,
+          error: "Refresh token is required",
+          code: "MISSING_REFRESH_TOKEN",
+        });
+      }
+
+      const result = await DeviceService.generateNewAccessToken(refreshToken);
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new DeviceController();
