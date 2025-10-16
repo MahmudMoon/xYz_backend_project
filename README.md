@@ -91,6 +91,8 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
    JWT_EXPIRES_IN=24h
 
    # Refresh Token Configuration (NEW)
+   # IMPORTANT: Must be different from JWT_SECRET for security
+   # Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
    JWT_REFRESH_SECRET=your_secure_refresh_token_secret_different_from_jwt_secret
    JWT_REFRESH_EXPIRES_IN=7d
 
@@ -98,6 +100,8 @@ A comprehensive Node.js Express.js application with advanced authentication, Mon
    NODE_ENV=development
    PORT=3000
    ```
+
+> 🔑 **Important**: For comprehensive JWT configuration, security considerations, and troubleshooting, see [docs/JWT_CONFIGURATION.md](./docs/JWT_CONFIGURATION.md)
 
 ## 🚦 Usage
 
@@ -300,6 +304,29 @@ This project implements a sophisticated **4-tier authentication system** with re
 - **🔐 Separate Login Routes**: Distinct endpoints for admin vs super admin
 - **🔄 Refresh Tokens**: 7-day refresh tokens for seamless user experience
 - **🎯 Role-Based Validation**: Proper role checking during authentication
+
+### 🔑 JWT Refresh Token System
+
+The application uses a **dual-token approach** for enhanced security:
+
+#### **Access Tokens** (5 minutes)
+
+- Short-lived for API access
+- Signed with `JWT_SECRET`
+- Automatically expire to minimize security risk
+
+#### **Refresh Tokens** (7 days)
+
+- Long-lived for token renewal
+- Signed with `JWT_REFRESH_SECRET` (must be different from JWT_SECRET)
+- Used only to generate new access tokens
+
+#### **Security Benefits**
+
+- **Reduced Attack Window**: Access tokens expire quickly
+- **Seamless UX**: Users don't need to re-authenticate frequently
+- **Separate Signing**: Different secrets prevent token confusion attacks
+- **Revocable**: Refresh tokens can be invalidated server-side
 
 ## 📋 API Endpoints
 

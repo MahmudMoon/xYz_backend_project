@@ -16,7 +16,8 @@
 | 🏠 **Project Overview**       | Main project introduction and setup        | [README.md](./README.md)                                           |
 | 🚀 **Getting Started**        | Installation, setup, and quick start guide | [⬇️ Quick Start](#-quick-start)                                    |
 | 🔐 **Authentication System**  | Multi-tier JWT authentication flow         | [⬇️ Authentication](#-authentication-system)                       |
-| 👑 **Super Admin Guide**      | Complete super admin management            | [docs/SUPER_ADMIN.md](./docs/SUPER_ADMIN.md)                       |
+| � **JWT Configuration**       | JWT secrets, refresh tokens, security      | [docs/JWT_CONFIGURATION.md](./docs/JWT_CONFIGURATION.md)           |
+| �👑 **Super Admin Guide**     | Complete super admin management            | [docs/SUPER_ADMIN.md](./docs/SUPER_ADMIN.md)                       |
 | 📖 **API Documentation**      | Complete API reference with examples       | [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)           |
 | 🗄️ **Database Documentation** | Complete MongoDB schema & operations       | [docs/DATABASE_DOCUMENTATION.md](./docs/DATABASE_DOCUMENTATION.md) |
 | 🧪 **Testing Guide**          | Comprehensive testing procedures           | [docs/TESTING_GUIDE.md](./docs/TESTING_GUIDE.md)                   |
@@ -86,6 +87,10 @@ MONGODB_URI=mongodb://localhost:27017/express_learning
 # JWT Configuration
 JWT_SECRET=your_super_secure_jwt_secret_key_here_min_32_chars
 JWT_EXPIRES_IN=24h
+
+# Refresh Token Configuration (CRITICAL: Different from JWT_SECRET)
+JWT_REFRESH_SECRET=your_completely_different_refresh_secret_key_here
+JWT_REFRESH_EXPIRES_IN=7d
 
 # Server Configuration
 NODE_ENV=development

@@ -17,6 +17,8 @@ The complete interactive API documentation is available through Swagger UI when 
 - **Authentication flow** with JWT token management
 - **Real-time testing** with live server responses
 
+> 📚 **JWT Configuration Guide**: For detailed JWT setup, security considerations, and troubleshooting, see [JWT_CONFIGURATION.md](./JWT_CONFIGURATION.md)
+
 ---
 
 ## 🔐 Authentication System
@@ -710,6 +712,8 @@ JWT_EXPIRES_IN=24h
 DEVICE_JWT_EXPIRES_IN=5m
 
 # Refresh Token Configuration (NEW)
+# IMPORTANT: Use a completely different secret from JWT_SECRET for security
+# Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 JWT_REFRESH_SECRET=your_super_secure_refresh_token_secret_different_from_jwt_secret
 JWT_REFRESH_EXPIRES_IN=7d
 
@@ -720,6 +724,45 @@ AUTH_RATE_LIMIT_WINDOW=900000
 # Logging
 LOG_LEVEL=info
 ```
+
+### 🔑 JWT Configuration Details
+
+#### JWT_SECRET vs JWT_REFRESH_SECRET
+
+**Critical Security Requirement**: These must be **completely different** secrets!
+
+```env
+# ❌ WRONG - Same secret (Security Risk)
+JWT_SECRET=mySecretKey123
+JWT_REFRESH_SECRET=mySecretKey123
+
+# ✅ CORRECT - Different secrets (Secure)
+JWT_SECRET=6f8a2b4c9e1d3f7a8b2c5d9e2f1a4b7c8d0e3f6a9b2c5d8e1f4a7b0c3d6e9f2a5b8c
+JWT_REFRESH_SECRET=9a3c5f8e2b1d4a7c0f3e6b9c2d5f8a1e4b7d0c3f6e9a2c5d8f1b4e7a0d3c6f9b2e5
+```
+
+#### Security Benefits of Separate Secrets
+
+1. **Token Isolation**: Access and refresh tokens cannot be interchanged
+2. **Attack Mitigation**: Compromising one secret doesn't compromise both token types
+3. **Role Separation**: Different signing keys for different purposes
+4. **Audit Trail**: Easier to track token type in security logs
+
+#### Generating Secure Secrets
+
+```bash
+# Generate JWT_SECRET
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
+
+# Generate JWT_REFRESH_SECRET (different from above)
+node -e "console.log('JWT_REFRESH_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
+```
+
+#### Token Expiration Strategy
+
+- **Access Tokens**: 5 minutes (short-lived for security)
+- **Refresh Tokens**: 7 days (long-lived for user experience)
+- **Admin Tokens**: 24 hours (administrative convenience)
 
 ---
 
